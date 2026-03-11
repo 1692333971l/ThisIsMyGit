@@ -1,0 +1,54 @@
+﻿//模拟登录接口的实现
+using System.Collections;
+using System.Collections.Generic;
+
+public class MockAuthService : IAuthService
+{
+    private readonly Dictionary<string, Dictionary<string, string>> users = new Dictionary<string, Dictionary<string, string>>();
+    public MockAuthService()
+    {
+        users.Add("123", Dictionary)
+        users["111"] = new Dictionary<string, string>();
+    }
+    public LoginResponse Login(string account, string password)//模拟登录接口
+    {
+        if (!users.ContainsKey(account))
+        {
+            return new LoginResponse
+            {
+                Success = false,
+                Message = "账号不存在",
+                AccountId = 0,
+                Token = null
+            };
+        }
+        if(!users[account].Equals(password))
+        {
+            return new LoginResponse
+            {
+                Success = false,
+                Message = "账号或密码错误",
+                AccountId = 0,
+                Token = null
+            };
+        }
+        return new LoginResponse
+        {
+            Success = true,
+            Message = "登录成功",
+            AccountId = 1001,
+            Token = "mock_token_1001"
+        };
+    }
+    public LoginResponse Register(string account, string password)
+    {
+        users[account] = password;
+        return new LoginResponse
+        {
+            Success = true,
+            Message = "注册成功",
+            AccountId = 1002,
+            Token = "mock_token_1001"
+        };
+     }
+}
