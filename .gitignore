@@ -1,14 +1,14 @@
-[Ll]ibrary/
-[Tt]emp/
-[Oo]bj/
-[Bb]uild/
-[Ll]ogs/
-UserSettings/
+MMORPG/[Ll]ibrary/
+MMORPG/[Tt]emp/
+MMORPG/[Oo]bj/
+MMORPG/[Bb]uild/
+MMORPG/[Ll]ogs/
+MMORPG/UserSettings/
 
-.vs/
-*.csproj
-*.sln
-*.unityproj
-*.user
-*.userprefs
-*.pidb
+MMORPG/.vs/
+MMORPG/*.csproj
+MMORPG/*.sln
+MMORPG/*.unityproj
+MMORPG/*.user
+MMORPG/*.userprefs
+MMORPG/*.pidb
