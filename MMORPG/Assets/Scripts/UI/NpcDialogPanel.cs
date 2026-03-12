@@ -18,6 +18,10 @@ public class NpcDialogPanel : MonoBehaviour
 
     public void Show(string npcName, string dialogContent)
     {
+        if (_panelRoot.activeSelf)
+        {
+            return;
+        }
         _panelRoot.SetActive(true);
         _npcNameText.text = npcName;
         _dialogContentText.text = dialogContent;
@@ -26,10 +30,5 @@ public class NpcDialogPanel : MonoBehaviour
     public void Hide()
     {
         _panelRoot.SetActive(false);
-    }
-
-    public bool IsShowing()
-    {
-        return _panelRoot != null && _panelRoot.activeSelf;
     }
 }

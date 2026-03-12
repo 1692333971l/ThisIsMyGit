@@ -6,6 +6,7 @@ public class GameApp : MonoBehaviour
     public static GameApp Instance { get; private set; }//主程序单例
     public SceneLoader SceneLoader { get; private set; }//场景加载器
     public PlayerSession PlayerSession { get; private set; }//玩家数据管理器
+    public InteractionManager InteractionManager { get; private set; }//交互管理器
 
     public IAuthService AuthService { get; private set; }//认证服务接口
     public IRoleService RoleService { get; private set; }//库存服务接口
@@ -35,6 +36,7 @@ public class GameApp : MonoBehaviour
     {
         SceneLoader = new SceneLoader();
         PlayerSession = new PlayerSession();
+        InteractionManager = new InteractionManager();
     }
 
     private void InitServices()
