@@ -50,7 +50,7 @@ public class NpcInteractable : MonoBehaviour, IInteractable
     //IInteractable 接口实现 当玩家按下交互键时调用，显示对话面板 UI
     public void Interact()
     {
-        _dialogPanel.Show(_npcData.Name, _npcData.DialogContent);
+        _dialogPanel.Show(_npcData);
     }
     //当玩家进入触发器范围时注册为交互候选对象
     private void OnTriggerEnter(Collider other)
@@ -61,7 +61,7 @@ public class NpcInteractable : MonoBehaviour, IInteractable
         }
         GameApp.Instance.InteractionManager.RegisterInteractable(this);
     }
-    // 当玩家离开触发器范围时取消注册
+    //当玩家离开触发器范围时取消注册
     private void OnTriggerExit(Collider other)
     {
         if (!IsPlayer(other))

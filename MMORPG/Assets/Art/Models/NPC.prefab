@@ -288,9 +288,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c77a13df4c50584a9993cc46c2dc062, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _nameText: {fileID: 2654996645612167991}
-  _interactHintText: {fileID: 2654996644949272792}
-  _talkPanle: {fileID: 0}
+  _npcId: 1
+  _priority: 50
+  _worldHintView: {fileID: 0}
+  _dialogPanel: {fileID: 0}
 --- !u!1 &2654996644084835824
 GameObject:
   m_ObjectHideFlags: 0
@@ -2020,7 +2021,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2654996645612167985}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2030,7 +2031,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.2}
+  m_AnchoredPosition: {x: 0, y: 0.20000005}
   m_SizeDelta: {x: 1, y: 0.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2654996645612167990

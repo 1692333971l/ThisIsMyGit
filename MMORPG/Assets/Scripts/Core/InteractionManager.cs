@@ -14,7 +14,7 @@ public class InteractionManager
         _playerTransform = playerTransform;
         RefreshCurrentInteractable();
     }
-    //加入候选列表
+    //当玩家进入可交互对象的触发范围时调用，添加到候选列表
     public void RegisterInteractable(IInteractable interactable)
     {
         if (interactable == null)//避免添加空对象
@@ -29,7 +29,7 @@ public class InteractionManager
         _candidates.Add(interactable);
         RefreshCurrentInteractable();
     }
-    //移出候选列表
+    //当玩家离开可交互对象的触发范围时调用，从候选列表移除
     public void UnregisterInteractable(IInteractable interactable)
     {
         if (interactable == null)
@@ -42,7 +42,7 @@ public class InteractionManager
             RefreshCurrentInteractable();
         }
     }
-    // 玩家触发交互时调用
+    //玩家主动触发交互时调用
     public void InteractCurrent()
     {
         if (_currentInteractable == null)
