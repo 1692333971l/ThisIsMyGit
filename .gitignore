@@ -1,14 +1,73 @@
-MMORPG/[Ll]ibrary/
-MMORPG/[Tt]emp/
-MMORPG/[Oo]bj/
-MMORPG/[Bb]uild/
-MMORPG/[Ll]ogs/
-MMORPG/UserSettings/
+# =========================
+# Unity
+# =========================
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+UserSettings/
+MemoryCaptures/
+Recordings/
 
-MMORPG/.vs/
-MMORPG/*.csproj
-MMORPG/*.sln
-MMORPG/*.unityproj
-MMORPG/*.user
-MMORPG/*.userprefs
-MMORPG/*.pidb
+# Unity 自动生成的 csproj / sln（如果你不想提交 Unity 生成的工程文件）
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# 如果你仓库里需要保留服务端的 .sln 和 .csproj，
+# 上面这条 *.sln / *.csproj 会误伤，所以建议下面这样处理：
+!MMOServerSide/**/*.sln
+!MMOServerSide/**/*.csproj
+
+# 保留 Unity 的 Packages 和 ProjectSettings
+!/[Pp]rojectSettings/**
+!/[Pp]ackages/**
+
+# =========================
+# Visual Studio / Rider
+# =========================
+.vs/
+.idea/
+.gradle/
+
+# =========================
+# .NET / C#
+# =========================
+[Bb]in/
+[Oo]bj/
+
+# 用户本地文件
+*.user
+*.rsuser
+*.suo
+
+# 测试结果 / 覆盖率
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# NuGet
+*.nupkg
+packages/
+!**/packages/build/
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
