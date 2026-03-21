@@ -2,11 +2,11 @@ using Protocol;
 using System;
 using UnityEngine;
 
-//登录注册业务层
+//登录注册Service
 public class UserService
 {
-    public event Action<LoginResponse> OnLoginResponse;
-    public event Action<RegisterResponse> OnRegisterResponse;
+    public event Action<LoginResponse> OnLoginResponse;//登录响应事件
+    public event Action<RegisterResponse> OnRegisterResponse;//注册响应事件
 
     //登录请求
     public void SendLogin(string account, string password)
@@ -29,8 +29,8 @@ public class UserService
         LoginResponse response = JsonUtility.FromJson<LoginResponse>(message.BodyJson);
         if ((ErrorCode)response.ErrorCode == ErrorCode.Success)
         {
-            GameApp.Instance.UserSession.UserId = response.UserId;
-            GameApp.Instance.UserSession.Account = response.Account;
+            GameApp.Instance.UserSession.SetUserId(response.UserId);
+            GameApp.Instance.UserSession.SetAccount(response.Account);
         }
         OnLoginResponse?.Invoke(response);
     }

@@ -12,11 +12,17 @@ public class ClientMessageDispatcher
     {
         switch ((MessageId)message.MessageId)
         {
-            case MessageId.LoginResponse:
+            case MessageId.LoginResponse://登录请求
                 GameApp.Instance.UserService.HandleLoginResponse(message);
                 break;
-            case MessageId.RegisterResponse:
+            case MessageId.RegisterResponse://注册请求
                 GameApp.Instance.UserService.HandleRegisterResponse(message);
+                break;
+            case MessageId.CreateCharacterResponse://创建角色请求
+                GameApp.Instance.CharacterService.HandleCreateCharacterResponse(message);
+                break;
+            case MessageId.GetCharacterListResponse://获取角色一览请求
+                GameApp.Instance.CharacterService.HandleGetCharacterListResponse(message);
                 break;
             default:
                 Debug.LogWarning($"ClientMessageDispatcher: unknown message id = {message.MessageId}");

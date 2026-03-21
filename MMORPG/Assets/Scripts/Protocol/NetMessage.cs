@@ -1,5 +1,6 @@
 using System;
 
+//网络请求数据模型
 namespace Protocol
 {
     [Serializable]

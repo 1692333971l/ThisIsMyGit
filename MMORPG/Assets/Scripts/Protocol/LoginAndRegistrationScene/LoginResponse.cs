@@ -1,5 +1,6 @@
 using System;
 
+//登录响应
 namespace Protocol
 {
     [Serializable]

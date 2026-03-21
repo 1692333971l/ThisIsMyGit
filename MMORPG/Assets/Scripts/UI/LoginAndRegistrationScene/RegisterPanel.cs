@@ -6,29 +6,20 @@ using UnityEngine.UI;
 //注册面板UI
 public class RegisterPanel : MonoBehaviour
 {
-    [SerializeField]
-    private TMP_InputField _accountInput;
-    [SerializeField]
-    private TMP_InputField _passwordInput;
-    [SerializeField]
-    private TMP_InputField _confirmPassword;
-    [SerializeField]
-    private Button _registerButton;
-    [SerializeField]
-    private Button _backButton;
-
-    private void Awake()
-    {
-        _registerButton.onClick.AddListener(OnClickRegisterButton);
-    }
+    [SerializeField] private TMP_InputField _accountInput;//账号输入框
+    [SerializeField] private TMP_InputField _passwordInput;//密码输入框
+    [SerializeField] private TMP_InputField _confirmPassword;//密码二次确认输入框
+    [SerializeField] private Button _registerButton;//注册按钮
     private void Start()
     {
+        _registerButton.onClick.AddListener(OnClickRegisterButton);
         GameApp.Instance.UserService.OnRegisterResponse += HandleRegisterResponse;
     }
     private void OnDestroy()
     {
         GameApp.Instance.UserService.OnRegisterResponse -= HandleRegisterResponse;
     }
+    //点击注册按钮，发送注册请求
     private void OnClickRegisterButton()
     {
         if (!_passwordInput.text.Equals(_confirmPassword.text))
@@ -38,6 +29,7 @@ public class RegisterPanel : MonoBehaviour
         }
         GameApp.Instance.UserService.SendRegister(_accountInput.text, _passwordInput.text);
     }
+    //请求响应事件触发
     private void HandleRegisterResponse(RegisterResponse registerResponse)
     {
         switch ((ErrorCode)registerResponse.ErrorCode)

@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/CharacterSelectionAndCreationScene.unity
     guid: 25abf903d8e23ef4bb700949b9ba80d1
+  - enabled: 1
+    path: Assets/Scenes/MainCity.unity
+    guid: fe5c77531e6e9924eba7d4ac41048349
   m_configObjects: {}

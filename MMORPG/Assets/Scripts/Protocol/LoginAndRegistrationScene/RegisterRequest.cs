@@ -1,5 +1,6 @@
 using System;
 
+//注册请求
 namespace Protocol
 {
     [Serializable]
