@@ -552,6 +552,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e703997817bab1548ac95b172736eb4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _characterSelectionPanel: {fileID: 1099069541}
   _nameInput: {fileID: 2034090635}
   _professionlSelection: {fileID: 621308496}
   _characterCreationButton: {fileID: 686397852}
@@ -563,7 +564,6 @@ MonoBehaviour:
   _defense: {fileID: 1280380449}
   _maxHp: {fileID: 664155590}
   _maxMp: {fileID: 2059991466}
-  _characterSelectionPanel: {fileID: 1099069541}
 --- !u!1 &258609548
 GameObject:
   m_ObjectHideFlags: 0

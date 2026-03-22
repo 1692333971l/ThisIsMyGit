@@ -7,6 +7,7 @@ public class CharacterService
 {
     public event Action<GetCharacterListResponse> OnGetCharacterListResponse;//获取角色一览响应事件
     public event Action<CreateCharacterResponse> OnCreateCharacterResponse;//创建角色响应事件
+    public event Action<EnterGameResponse> OnEnterGameResponse;//进入主城响应事件
 
     //角色列表获取请求
     public void SendGetCharacterList()
@@ -49,5 +50,27 @@ public class CharacterService
     {
         CreateCharacterResponse response = JsonUtility.FromJson<CreateCharacterResponse>(message.BodyJson);
         OnCreateCharacterResponse?.Invoke(response);
+    }
+    //进入主城请求
+    public void SendEnterGame()
+    {
+        Protocol.CharacterInfo characterInfo = GameApp.Instance.PlayerCharacterManager.GetCharacterInfo();
+        EnterGameRequest enterGameRequest = new EnterGameRequest()
+        {
+            UserId = characterInfo.UserId,
+            CharacterId = characterInfo.CharacterId
+        };
+        NetMessage message = new NetMessage()
+        {
+            MessageId = (int)MessageId.EnterGameRequest,
+            BodyJson= JsonUtility.ToJson(enterGameRequest)
+        };
+        GameApp.Instance.NetClient.SendMessage(message);
+    }
+    //进入主城响应
+    public void HandleEnterGameResponse(NetMessage message)
+    {
+        EnterGameResponse response = JsonUtility.FromJson<EnterGameResponse>(message.BodyJson);
+        OnEnterGameResponse?.Invoke(response);
     }
 }

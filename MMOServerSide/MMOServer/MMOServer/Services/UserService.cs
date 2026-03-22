@@ -2,6 +2,7 @@
 using MMOServer.Database;
 using MMOServer.Models;
 using Protocol;
+using System;
 
 namespace MMOServer.Services
 {

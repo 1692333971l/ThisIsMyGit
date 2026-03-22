@@ -3,6 +3,9 @@ using MMOServer.Core;
 using MMOServer.Database;
 using MMOServer.Models;
 using Protocol;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MMOServer.Services
 {
@@ -127,7 +130,61 @@ namespace MMOServer.Services
                 return BuildCreateCharacterResponse(response);
             }
         }
+        /// <summary>
+        /// 处理进入游戏请求
+        /// </summary>
+        public NetMessage HandleEnterGame(NetMessage requestMessage)
+        {
+            EnterGameRequest request = JsonHelper.FromJson<EnterGameRequest>(requestMessage.BodyJson);
+            EnterGameResponse response = new EnterGameResponse();
 
+            Logger.Info($"HandleEnterGame: UserId = {request.UserId}, CharacterId = {request.CharacterId}");
+
+            if (request.UserId <= 0 || request.CharacterId <= 0)
+            {
+                response.ErrorCode = (int)ErrorCode.InvalidParams;
+                response.Message = "进入游戏参数无效";
+                return BuildEnterGameResponse(response);
+            }
+
+            try
+            {
+                CharacterEntity entity = _characterRepository.GetByCharacterIdAndUserId(request.CharacterId, request.UserId);
+                if (entity == null)
+                {
+                    response.ErrorCode = (int)ErrorCode.UnknownError;
+                    response.Message = "角色不存在或不属于当前用户";
+                    return BuildEnterGameResponse(response);
+                }
+
+                response.ErrorCode = (int)ErrorCode.Success;
+                response.Message = "进入游戏成功";
+                response.CharacterInfo = new CharacterInfo
+                {
+                    CharacterId = entity.Id,
+                    UserId = entity.UserId,
+                    Name = entity.Name,
+                    Profession = entity.Profession,
+                    Level = entity.Level,
+                    Gold = entity.Gold,
+                    Hp = entity.Hp,
+                    Mp = entity.Mp,
+                    MapId = entity.MapId,
+                    PosX = entity.PosX,
+                    PosY = entity.PosY,
+                    PosZ = entity.PosZ
+                };
+                return BuildEnterGameResponse(response);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"HandleEnterGame failed: {ex.Message}");
+                Logger.Error($"HandleEnterGame failed: {ex}");
+                response.ErrorCode = (int)ErrorCode.UnknownError;
+                response.Message = "进入游戏失败";
+                return BuildEnterGameResponse(response);
+            }
+        }
         /// <summary>
         /// 根据职业配置构建默认角色数据
         /// </summary>
@@ -184,6 +241,14 @@ namespace MMOServer.Services
             return new NetMessage
             {
                 MessageId = (int)MessageId.CreateCharacterResponse,
+                BodyJson = JsonHelper.ToJson(response)
+            };
+        }
+        private NetMessage BuildEnterGameResponse(EnterGameResponse response)
+        {
+            return new NetMessage
+            {
+                MessageId = (int)MessageId.EnterGameResponse,
                 BodyJson = JsonHelper.ToJson(response)
             };
         }

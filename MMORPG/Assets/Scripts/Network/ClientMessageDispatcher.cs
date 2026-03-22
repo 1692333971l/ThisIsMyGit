@@ -24,6 +24,9 @@ public class ClientMessageDispatcher
             case MessageId.GetCharacterListResponse://获取角色一览请求
                 GameApp.Instance.CharacterService.HandleGetCharacterListResponse(message);
                 break;
+            case MessageId.EnterGameResponse://进入游戏响应
+                GameApp.Instance.CharacterService.HandleEnterGameResponse(message);
+                break;
             default:
                 Debug.LogWarning($"ClientMessageDispatcher: unknown message id = {message.MessageId}");
                 break;

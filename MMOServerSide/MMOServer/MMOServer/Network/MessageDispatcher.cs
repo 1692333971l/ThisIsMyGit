@@ -15,16 +15,14 @@ namespace MMOServer.Network
             {
                 case MessageId.LoginRequest:
                     return GameServer.Instance.UserService.HandleLogin(requestMessage);
-
                 case MessageId.RegisterRequest:
                     return GameServer.Instance.UserService.HandleRegister(requestMessage);
-
                 case MessageId.GetCharacterListRequest:
                     return GameServer.Instance.CharacterService.HandleGetCharacterList(requestMessage);
-
                 case MessageId.CreateCharacterRequest:
                     return GameServer.Instance.CharacterService.HandleCreateCharacter(requestMessage);
-
+                case MessageId.EnterGameRequest:
+                    return GameServer.Instance.CharacterService.HandleEnterGame(requestMessage);
                 default:
                     Logger.Warn($"Unknown message id: {requestMessage.MessageId}");
                     return null;

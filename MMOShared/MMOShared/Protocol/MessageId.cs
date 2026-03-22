@@ -6,16 +6,19 @@ namespace Protocol
         None = 0,
 
         // 登录请求响应
-        LoginRequest = 2001,
-        LoginResponse = 2002,
+        LoginRequest = 1000,
+        LoginResponse = 1001,
         // 注册请求响应
-        RegisterRequest = 2003,
-        RegisterResponse = 2004,
+        RegisterRequest = 1002,
+        RegisterResponse = 1003,
         // 角色创建
-        CreateCharacterRequest = 3001,
-        CreateCharacterResponse = 3002,
+        CreateCharacterRequest = 1004,
+        CreateCharacterResponse = 1005,
         // 获取角色列表
-        GetCharacterListRequest = 3003,
-        GetCharacterListResponse = 3004
+        GetCharacterListRequest = 1006,
+        GetCharacterListResponse = 1007,
+        // 进入主城
+        EnterGameRequest = 1008,
+        EnterGameResponse = 1009,
     }
 }
