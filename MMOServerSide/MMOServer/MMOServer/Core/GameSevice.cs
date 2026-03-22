@@ -1,13 +1,16 @@
 using MMOServer.Config;
 using MMOServer.Network;
+using MMOServer.Services;
 
 namespace MMOServer.Core
 {
     public class GameServer
     {
-        public static GameServer Instance { get; private set; } = null!;
-        private NetServer NetServer;
+        public static GameServer Instance { get; private set; }
+        public NetServer NetServer { get; private set; }
         public ProfessionConfigManager ProfessionConfigManager { get; private set; }
+        public UserService UserService { get; private set; }
+        public CharacterService CharacterService { get; private set; }
 
         public GameServer()
         {
@@ -15,9 +18,13 @@ namespace MMOServer.Core
             {
                 throw new Exception("GameServer already created.");
             }
+
             Instance = this;
-            NetServer = new NetServer();
+
+            NetServer               = new NetServer();
             ProfessionConfigManager = new ProfessionConfigManager();
+            UserService             = new UserService();
+            CharacterService        = new CharacterService();
         }
 
         public void Start()

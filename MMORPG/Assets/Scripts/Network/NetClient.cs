@@ -58,46 +58,53 @@ public class NetClient
     /// </summary>
     private async Task ReceiveLoop()
     {
-        byte[] buffer = new byte[2048];
-
         while (IsConnected)
         {
             try
             {
-                int length = await _stream.ReadAsync(buffer, 0, buffer.Length);
+                byte[] lengthBuffer = new byte[4];
+                bool lengthReadSuccess = await ReadExactAsync(_stream, lengthBuffer, 4);
 
-                if (length == 0)
+                if (!lengthReadSuccess)
                 {
                     Debug.LogWarning("Server disconnected.");
-
-                    MainThreadDispatcher.Instance.Enqueue(() =>
-                    {
-                        Disconnect();
-                    });
-
+                    MainThreadDispatcher.Instance.Enqueue(() => { Disconnect(); });
                     break;
                 }
 
-                string json = Encoding.UTF8.GetString(buffer, 0, length);
-                Debug.Log($"Receive raw json: {json}");
+                int bodyLength = BitConverter.ToInt32(lengthBuffer, 0);
+
+                if (bodyLength <= 0)
+                {
+                    Debug.LogError($"Invalid packet length: {bodyLength}");
+                    MainThreadDispatcher.Instance.Enqueue(() => { Disconnect(); });
+                    break;
+                }
+
+                byte[] bodyBuffer = new byte[bodyLength];
+                bool bodyReadSuccess = await ReadExactAsync(_stream, bodyBuffer, bodyLength);
+
+                if (!bodyReadSuccess)
+                {
+                    Debug.LogWarning("Server disconnected while reading packet body.");
+                    MainThreadDispatcher.Instance.Enqueue(() => { Disconnect(); });
+                    break;
+                }
+
+                string json = Encoding.UTF8.GetString(bodyBuffer);
+                Debug.Log($"Receive packet json: {json}");
 
                 NetMessage message = JsonUtility.FromJson<NetMessage>(json);
 
                 MainThreadDispatcher.Instance.Enqueue(() =>
                 {
-                    // 交给客户端消息分发器处理，不再直接通知UI
                     GameApp.Instance.ClientMessageDispatcher.HandleMessage(message);
                 });
             }
             catch (Exception ex)
             {
                 Debug.LogError($"Receive failed: {ex.Message}");
-
-                MainThreadDispatcher.Instance.Enqueue(() =>
-                {
-                    Disconnect();
-                });
-
+                MainThreadDispatcher.Instance.Enqueue(() => { Disconnect(); });
                 break;
             }
         }
@@ -117,11 +124,11 @@ public class NetClient
             }
 
             string json = JsonUtility.ToJson(message);
-            byte[] data = Encoding.UTF8.GetBytes(json);
+            byte[] packet = BuildPacket(json);
 
-            await _stream.WriteAsync(data, 0, data.Length);
+            await _stream.WriteAsync(packet, 0, packet.Length);
 
-            Debug.Log($"Send message json: {json}");
+            Debug.Log($"Send packet json: {json}");
         }
         catch (Exception ex)
         {
@@ -144,5 +151,35 @@ public class NetClient
         }
 
         Debug.Log("Disconnected from server.");
+    }
+
+    private byte[] BuildPacket(string json)
+    {
+        byte[] bodyBytes = Encoding.UTF8.GetBytes(json);
+        byte[] lengthBytes = BitConverter.GetBytes(bodyBytes.Length);
+
+        byte[] packet = new byte[4 + bodyBytes.Length];
+        Buffer.BlockCopy(lengthBytes, 0, packet, 0, 4);
+        Buffer.BlockCopy(bodyBytes, 0, packet, 4, bodyBytes.Length);
+
+        return packet;
+    }
+    private async Task<bool> ReadExactAsync(NetworkStream stream, byte[] buffer, int length)
+    {
+        int offset = 0;
+
+        while (offset < length)
+        {
+            int readCount = await stream.ReadAsync(buffer, offset, length - offset);
+
+            if (readCount == 0)
+            {
+                return false;
+            }
+
+            offset += readCount;
+        }
+
+        return true;
     }
 }

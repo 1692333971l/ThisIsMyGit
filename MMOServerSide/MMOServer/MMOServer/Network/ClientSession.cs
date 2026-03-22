@@ -39,27 +39,40 @@ namespace MMOServer.Network
         /// </summary>
         private async Task ReceiveLoop()
         {
-            byte[] buffer = new byte[2048];
-
             while (TcpClient.Connected)
             {
                 try
                 {
-                    int length = await _stream.ReadAsync(buffer, 0, buffer.Length);
+                    byte[] lengthBuffer = new byte[4];
+                    bool lengthReadSuccess = await ReadExactAsync(_stream, lengthBuffer, 4);
 
-                    if (length == 0)
+                    if (!lengthReadSuccess)
                     {
                         Logger.Warn($"Client disconnected: {RemoteEndPoint}");
                         break;
                     }
 
-                    string json = Encoding.UTF8.GetString(buffer, 0, length);
-                    Logger.Info($"Receive raw json from {RemoteEndPoint}: {json}");
+                    int bodyLength = BitConverter.ToInt32(lengthBuffer, 0);
 
-                    // 先把统一网络消息反序列化出来
+                    if (bodyLength <= 0)
+                    {
+                        Logger.Warn($"Invalid packet length from {RemoteEndPoint}: {bodyLength}");
+                        break;
+                    }
+
+                    byte[] bodyBuffer = new byte[bodyLength];
+                    bool bodyReadSuccess = await ReadExactAsync(_stream, bodyBuffer, bodyLength);
+
+                    if (!bodyReadSuccess)
+                    {
+                        Logger.Warn($"Client disconnected while reading body: {RemoteEndPoint}");
+                        break;
+                    }
+
+                    string json = Encoding.UTF8.GetString(bodyBuffer);
+                    Logger.Info($"Receive packet from {RemoteEndPoint}: {json}");
+
                     NetMessage requestMessage = JsonHelper.FromJson<NetMessage>(json);
-
-                    // 交给消息分发器处理
                     NetMessage responseMessage = _messageDispatcher.HandleMessage(requestMessage);
 
                     if (responseMessage != null)
@@ -91,11 +104,11 @@ namespace MMOServer.Network
                 }
 
                 string json = JsonHelper.ToJson(message);
-                byte[] data = Encoding.UTF8.GetBytes(json);
+                byte[] packet = BuildPacket(json);
 
-                await _stream.WriteAsync(data, 0, data.Length);
+                await _stream.WriteAsync(packet, 0, packet.Length);
 
-                Logger.Info($"Send json to {RemoteEndPoint}: {json}");
+                Logger.Info($"Send packet to {RemoteEndPoint}: {json}");
             }
             catch (Exception ex)
             {
@@ -113,6 +126,35 @@ namespace MMOServer.Network
             catch
             {
             }
+        }
+        private byte[] BuildPacket(string json)
+        {
+            byte[] bodyBytes = Encoding.UTF8.GetBytes(json);
+            byte[] lengthBytes = BitConverter.GetBytes(bodyBytes.Length);
+
+            byte[] packet = new byte[4 + bodyBytes.Length];
+            Buffer.BlockCopy(lengthBytes, 0, packet, 0, 4);
+            Buffer.BlockCopy(bodyBytes, 0, packet, 4, bodyBytes.Length);
+
+            return packet;
+        }
+        private async Task<bool> ReadExactAsync(NetworkStream stream, byte[] buffer, int length)
+        {
+            int offset = 0;
+
+            while (offset < length)
+            {
+                int readCount = await stream.ReadAsync(buffer, offset, length - offset);
+
+                if (readCount == 0)
+                {
+                    return false;
+                }
+
+                offset += readCount;
+            }
+
+            return true;
         }
     }
 }
