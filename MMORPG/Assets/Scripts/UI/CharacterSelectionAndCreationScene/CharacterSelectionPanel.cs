@@ -98,5 +98,6 @@ public class CharacterSelectionPanel : MonoBehaviour
         }
         GameObject characterModel = Resources.Load<GameObject>(GameApp.Instance.ProfessionConfigManager.GetById(Profession).ModelPath);
         _characterModel = Instantiate(characterModel, _characterViewPiont);
+        _characterModel.GetComponent<PlayerCharacterView>().SetupAsPreview();//启用预览模式
     }
 }

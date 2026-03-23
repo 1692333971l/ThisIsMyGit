@@ -12,6 +12,7 @@ public class GameApp : MonoBehaviour
     public CharacterService CharacterService { get; private set; }//角色选择创建业务层
     public SceneLoaderManager SceneLoaderManager { get; private set; }//场景切换管理器
     public PlayerCharacterManager PlayerCharacterManager { get; private set; }//玩家当前控制角色管理器
+    public PlayerSpawnManager PlayerSpawnManager { get; private set; }//玩家生成管理器
     public ProfessionConfigManager ProfessionConfigManager { get; private set; }//职业配置表管理器
 
     public string ServerIp { get; private set; } = "127.0.0.1";
@@ -50,6 +51,7 @@ public class GameApp : MonoBehaviour
 
         SceneLoaderManager      = new SceneLoaderManager();
         PlayerCharacterManager  = new PlayerCharacterManager();
+        PlayerSpawnManager      = new PlayerSpawnManager();
         ProfessionConfigManager = new ProfessionConfigManager();
     }
     //链接服务端
