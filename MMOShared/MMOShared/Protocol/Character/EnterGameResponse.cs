@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 //进入主城响应
 namespace Protocol
@@ -15,5 +16,7 @@ namespace Protocol
         // 角色信息
         public CharacterInfo CharacterInfo;
 
+        // 当前地图中的其他在线玩家
+        public List<OnlineCharacterInfo> OtherPlayers;
     }
 }

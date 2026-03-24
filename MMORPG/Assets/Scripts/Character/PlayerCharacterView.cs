@@ -1,6 +1,6 @@
 using UnityEngine;
 
-//角色表现初始化脚本，用于区分预览模式和本地玩家模式
+//同一个角色 prefab 的表现模式切换器
 [RequireComponent(typeof(PlayerMovementController))]
 public class PlayerCharacterView : MonoBehaviour
 {
@@ -18,10 +18,7 @@ public class PlayerCharacterView : MonoBehaviour
             _animator = GetComponentInChildren<Animator>();
         }
     }
-
-    /// <summary>
-    /// 设置为角色预览模式
-    /// </summary>
+    //设置为角色预览模式
     public void SetupAsPreview()
     {
         if (_characterController != null)
@@ -41,10 +38,7 @@ public class PlayerCharacterView : MonoBehaviour
             _animator.Play("Idle", 0, 0f);
         }
     }
-
-    /// <summary>
-    /// 设置为本地玩家模式
-    /// </summary>
+    //设置为本地玩家模式
     public void SetupAsLocalPlayer()
     {
         if (_characterController != null)
@@ -61,6 +55,31 @@ public class PlayerCharacterView : MonoBehaviour
         if (_animator != null)
         {
             _animator.enabled = true;
+        }
+    }
+    //设置为联机玩家模式
+    public void SetupAsRemotePlayer()
+    {
+        if (_characterController != null)
+        {
+            _characterController.enabled = false;
+        }
+
+        if (_movementController != null)
+        {
+            _movementController.SetCanMove(false);
+            _movementController.enabled = false;
+        }
+
+        if (_animator != null)
+        {
+            _animator.enabled = true;
+        }
+
+        RemotePlayerSync remoteSync = GetComponent<RemotePlayerSync>();
+        if (remoteSync == null)
+        {
+            gameObject.AddComponent<RemotePlayerSync>();
         }
     }
 }

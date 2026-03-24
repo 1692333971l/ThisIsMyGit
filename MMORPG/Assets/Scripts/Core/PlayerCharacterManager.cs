@@ -1,6 +1,6 @@
 using UnityEngine;
 
-//玩家当前控制角色管理器
+//当前本地玩家角色数据管理器
 public class PlayerCharacterManager
 {
     private Protocol.CharacterInfo _currentCharacterInfo;//当前玩家信息
@@ -26,11 +26,6 @@ public class PlayerCharacterManager
     {
         _currentCharacterObject = characterObject;
     }
-    //保存进入游戏后的完整数据
-    public void SetEnterGameData(Protocol.CharacterInfo characterInfo)
-    {
-        _currentCharacterInfo = characterInfo;
-    }
     //获取地图Id
     public int GetMapId()
     {
@@ -50,5 +45,6 @@ public class PlayerCharacterManager
     public void Clear()
     {
         _currentCharacterInfo = null;
+        _currentCharacterObject = null;
     }
 }

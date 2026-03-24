@@ -1,6 +1,7 @@
 using MMOServer.Config;
 using MMOServer.Network;
 using MMOServer.Services;
+using MMOServer.World;
 
 namespace MMOServer.Core
 {
@@ -11,6 +12,8 @@ namespace MMOServer.Core
         public ProfessionConfigManager ProfessionConfigManager { get; private set; }
         public UserService UserService { get; private set; }
         public CharacterService CharacterService { get; private set; }
+        public WorldService WorldService { get; private set; }
+        public OnlinePlayerManager OnlinePlayerManager { get; private set; }
 
         public GameServer()
         {
@@ -25,6 +28,8 @@ namespace MMOServer.Core
             ProfessionConfigManager = new ProfessionConfigManager();
             UserService             = new UserService();
             CharacterService        = new CharacterService();
+            WorldService            = new WorldService();
+            OnlinePlayerManager     = new OnlinePlayerManager();
         }
 
         public void Start()

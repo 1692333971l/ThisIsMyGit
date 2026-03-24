@@ -18,14 +18,12 @@ public class CharacterSelectionPanel : MonoBehaviour
     {
         SetUserInfo();
         GameApp.Instance.CharacterService.OnGetCharacterListResponse += HandleGetCharacterListResponse;
-        GameApp.Instance.CharacterService.OnEnterGameResponse += HandleEnterGameResponse;
         _logoutButton.onClick.AddListener(OnClickLogoutButton);
         _startGameButton.onClick.AddListener(OnClickStartGameButton);
     }
     private void OnDestroy()
     {
         GameApp.Instance.CharacterService.OnGetCharacterListResponse -= HandleGetCharacterListResponse;
-        GameApp.Instance.CharacterService.OnEnterGameResponse -= HandleEnterGameResponse;
         _logoutButton.onClick.RemoveAllListeners();
         _startGameButton.onClick.RemoveAllListeners();
     }
@@ -62,25 +60,12 @@ public class CharacterSelectionPanel : MonoBehaviour
     //开始游戏按钮点击事件
     private void OnClickStartGameButton()
     {
-        print(GameApp.Instance.PlayerCharacterManager.GetCharacterInfo());
-
         if (GameApp.Instance.PlayerCharacterManager.GetCharacterInfo() == null)
         {
             MessageHintWindowManger.Instance.ShowMessage("请选择角色");
             return;
         }
 
-        GameApp.Instance.CharacterService.SendEnterGame();
-    }
-    //进入游戏响应
-    private void HandleEnterGameResponse(EnterGameResponse response)
-    {
-        if ((ErrorCode)response.ErrorCode != ErrorCode.Success)
-        {
-            MessageHintWindowManger.Instance.ShowMessage(response.Message);
-            return;
-        }
-        GameApp.Instance.PlayerCharacterManager.SetEnterGameData(response.CharacterInfo);
         GameApp.Instance.SceneLoaderManager.LoadMainCity();
     }
     //登出按钮点击事件

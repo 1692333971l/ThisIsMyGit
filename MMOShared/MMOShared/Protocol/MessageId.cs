@@ -20,5 +20,15 @@ namespace Protocol
         // 进入主城
         EnterGameRequest = 1008,
         EnterGameResponse = 1009,
+        // 玩家进入通知
+        PlayerEnterNotify = 1010,
+        // 玩家离开通知
+        PlayerLeaveNotify = 1011,
+        // 玩家移动请求
+        PlayerMoveRequest = 1012,
+        // 玩家移动广播
+        PlayerMoveNotify = 1013,
+        // 玩家退出请求
+        PlayerExitRequest = 1014,
     }
 }

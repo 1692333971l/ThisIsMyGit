@@ -57,7 +57,7 @@ public class CharacterCreationPanel : MonoBehaviour
         }
         else
         {
-            MessageHintWindowManger.Instance.ShowMessage("角色数量已达最大限制");
+            MessageHintWindowManger.Instance.ShowMessage(createCharacterResponse.Message);
         }
     }
     //切换职业下拉框，动态加载职业属性与模型

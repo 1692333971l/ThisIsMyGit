@@ -1,5 +1,4 @@
 using MMOServer.Core;
-using MMOServer.Services;
 using Protocol;
 
 namespace MMOServer.Network
@@ -9,20 +8,32 @@ namespace MMOServer.Network
         /// <summary>
         /// 根据消息号分发处理
         /// </summary>
-        public NetMessage HandleMessage(NetMessage requestMessage)
+        public NetMessage HandleMessage(NetMessage requestMessage, ClientSession session)
         {
             switch ((MessageId)requestMessage.MessageId)
             {
                 case MessageId.LoginRequest:
                     return GameServer.Instance.UserService.HandleLogin(requestMessage);
+
                 case MessageId.RegisterRequest:
                     return GameServer.Instance.UserService.HandleRegister(requestMessage);
+
                 case MessageId.GetCharacterListRequest:
                     return GameServer.Instance.CharacterService.HandleGetCharacterList(requestMessage);
+
                 case MessageId.CreateCharacterRequest:
                     return GameServer.Instance.CharacterService.HandleCreateCharacter(requestMessage);
+
                 case MessageId.EnterGameRequest:
-                    return GameServer.Instance.CharacterService.HandleEnterGame(requestMessage);
+                    return GameServer.Instance.WorldService.HandleEnterGame(requestMessage, session);
+
+                case MessageId.PlayerMoveRequest:
+                    GameServer.Instance.WorldService.HandlePlayerMove(requestMessage, session);
+                    return null;
+
+                case MessageId.PlayerExitRequest:
+                    GameServer.Instance.WorldService.HandlePlayerExit(requestMessage, session);
+                    return null;
                 default:
                     Logger.Warn($"Unknown message id: {requestMessage.MessageId}");
                     return null;
