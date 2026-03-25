@@ -22,6 +22,7 @@ namespace MMOServer.World
 
         public float RotY;
         public bool IsMoving;
+        public bool IsRunning;
 
         public ClientSession Session;
     }

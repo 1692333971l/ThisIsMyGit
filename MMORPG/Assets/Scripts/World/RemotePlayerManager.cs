@@ -154,7 +154,8 @@ public class RemotePlayerManager
         remoteSync.ApplyNetState(
             new Vector3(notify.PosX, notify.PosY, notify.PosZ),
             notify.RotY,
-            notify.IsMoving
+            notify.IsMoving,
+            notify.IsRunning
         );
     }
 }

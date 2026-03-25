@@ -25,6 +25,15 @@ namespace MMOServer.Network
         public TcpClient TcpClient { get; private set; }
 
         /// <summary>
+        /// 是否已经关闭
+        /// 0 = 未关闭
+        /// 1 = 已关闭
+        /// 
+        /// 用 Interlocked 保证多线程下 Close() 只会真正执行一次
+        /// </summary>
+        private int _isClosed = 0;
+
+        /// <summary>
         /// 当前连接对应的网络流
         /// 后续收发数据都通过这个流进行
         /// </summary>
@@ -53,7 +62,8 @@ namespace MMOServer.Network
         /// 例如：127.0.0.1:53214
         /// 用于日志输出，方便定位是哪一个客户端连接
         /// </summary>
-        public string RemoteEndPoint => TcpClient.Client.RemoteEndPoint?.ToString() ?? "Unknown";
+        private readonly string _remoteEndPoint;
+        public string RemoteEndPoint => _remoteEndPoint;
 
         /// <summary>
         /// 构造函数
@@ -76,6 +86,8 @@ namespace MMOServer.Network
             // 每个会话都持有一个消息分发器
             // 收到消息后，交给它根据消息号转给对应业务处理
             _messageDispatcher = new MessageDispatcher();
+
+            _remoteEndPoint = TcpClient?.Client?.RemoteEndPoint?.ToString() ?? "Unknown";
         }
 
         /// <summary>
@@ -220,7 +232,7 @@ namespace MMOServer.Network
             try
             {
                 // 如果网络流为空，或者 TCP 已断开，则不能发送
-                if (_stream == null || !TcpClient.Connected)
+                if (_isClosed == 1 || _stream == null || TcpClient == null || !TcpClient.Connected)
                 {
                     Logger.Warn($"Send failed, client disconnected: {RemoteEndPoint}");
                     return;
@@ -246,37 +258,69 @@ namespace MMOServer.Network
         }
 
         /// <summary>
-        /// 关闭当前会话
+        /// 关闭当前会话（幂等）
         /// 
         /// 作用：
-        /// 1. 通知业务层处理玩家掉线
-        /// 2. 关闭网络流
-        /// 3. 关闭 TCP 连接
-        /// 
-        /// 注意：
-        /// 你后面最好把这里改成“幂等关闭”版本（防止重复 Close）
-        /// 并且不要用空 catch 吞异常。
+        /// 1. 保证同一个会话只会真正关闭一次
+        /// 2. 通知业务层处理玩家掉线
+        /// 3. 释放网络流和 TCP 连接
+        /// 4. 输出日志，便于排查问题
         /// </summary>
         public void Close()
         {
+            // 如果已经关闭过了，则直接返回
+            // CompareExchange 的意思：
+            // - 如果当前 _isClosed == 0，就把它改成 1，并返回旧值 0
+            // - 如果当前 _isClosed != 0，说明已经关闭过，直接返回旧值
+            if (Interlocked.CompareExchange(ref _isClosed, 1, 0) != 0)
+            {
+                return;
+            }
+
+            Logger.Warn($"Session closing: {RemoteEndPoint}, CharacterId={CurrentCharacterId}, UserId={UserId}");
+
+            // 第一步：通知业务层处理掉线
             try
             {
-                // 通知角色服务：当前 session 对应的玩家掉线了
-                // 它会负责把玩家从 OnlinePlayerManager 中移除，
-                // 并广播 PlayerLeaveNotify 给其他玩家
                 GameServer.Instance.WorldService.HandlePlayerDisconnect(this);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"HandlePlayerDisconnect failed: {RemoteEndPoint}, Error={ex.Message}");
+                Logger.Error(ex.ToString());
+            }
 
-                // 关闭网络流
+            // 第二步：关闭网络流
+            try
+            {
                 _stream?.Close();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Close stream failed: {RemoteEndPoint}, Error={ex.Message}");
+                Logger.Error(ex.ToString());
+            }
+            finally
+            {
+                _stream = null;
+            }
 
-                // 关闭 TCP 连接
+            // 第三步：关闭 TCP 连接
+            try
+            {
                 TcpClient?.Close();
             }
-            catch
+            catch (Exception ex)
             {
-                // 当前写法是把异常全吞掉了
-                // 项目后面建议改成打日志的方式，方便排查问题
+                Logger.Error($"Close tcp client failed: {RemoteEndPoint}, Error={ex.Message}");
+                Logger.Error(ex.ToString());
             }
+            finally
+            {
+                TcpClient = null;
+            }
+
+            Logger.Warn($"Session closed: {RemoteEndPoint}");
         }
 
         /// <summary>

@@ -138,7 +138,8 @@ public class PlayerSpawnManager
         remoteSync.ApplyNetState(
             spawnPosition,
             characterInfo.RotY,
-            characterInfo.IsMoving
+            characterInfo.IsMoving,
+            characterInfo.IsRunning
         );
 
         // 把这个远端玩家对象登记到 RemotePlayerManager 中

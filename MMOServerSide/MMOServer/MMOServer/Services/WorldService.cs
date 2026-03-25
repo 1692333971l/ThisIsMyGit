@@ -226,8 +226,9 @@ namespace MMOServer.Services
             // 更新该玩家的朝向
             player.RotY = request.RotY;
 
-            // 更新该玩家是否正在移动
+            // 更新该玩家是否正在移动或跑动
             player.IsMoving = request.IsMoving;
+            player.IsRunning = request.IsRunning;
 
             // 构造“玩家移动通知”
             PlayerMoveNotify notify = new PlayerMoveNotify
@@ -237,7 +238,8 @@ namespace MMOServer.Services
                 PosY = player.PosY,
                 PosZ = player.PosZ,
                 RotY = player.RotY,
-                IsMoving = player.IsMoving
+                IsMoving = player.IsMoving,
+                IsRunning = player.IsRunning
             };
 
             // 再把通知包装成网络消息
@@ -287,32 +289,12 @@ namespace MMOServer.Services
             int mapId = player.MapId;
             int characterId = player.CharacterId;
 
+            // 保存玩家位置
+            SaveOnlinePlayerState(player);
+            // 广播“该玩家离开”给同地图其他玩家
+            BroadcastPlayerLeave(player);
             // 从在线玩家管理器中移除这个角色
             GameServer.Instance.OnlinePlayerManager.RemovePlayer(characterId);
-
-            // 构造“玩家离开通知”
-            PlayerLeaveNotify notify = new PlayerLeaveNotify
-            {
-                CharacterId = characterId
-            };
-
-            // 包装成网络消息
-            NetMessage message = new NetMessage
-            {
-                MessageId = (int)MessageId.PlayerLeaveNotify,
-                BodyJson = JsonHelper.ToJson(notify)
-            };
-
-            // 获取同地图内剩下的玩家
-            // 注意：这里因为自己已经先移除了，所以 GetPlayersByMapId(mapId) 拿到的就是“剩余玩家”
-            List<OnlinePlayer> otherPlayers = GameServer.Instance.OnlinePlayerManager
-                .GetPlayersByMapId(mapId);
-
-            // 把离开通知发给这些剩余玩家
-            foreach (var other in otherPlayers)
-            {
-                other.Session.SendMessage(message);
-            }
         }
 
         /// <summary>
@@ -354,12 +336,12 @@ namespace MMOServer.Services
                 return;
             }
 
+            // 保存玩家位置
+            SaveOnlinePlayerState(player);
             // 广播“该玩家离开”给同地图其他玩家
             BroadcastPlayerLeave(player);
-
             // 从在线玩家管理器中移除该玩家
             GameServer.Instance.OnlinePlayerManager.RemovePlayer(player.CharacterId);
-
             // 打一条日志
             Logger.Warn($"HandlePlayerExit success: CharacterId={player.CharacterId}");
         }
@@ -447,6 +429,36 @@ namespace MMOServer.Services
             foreach (var other in others)
             {
                 other.Session.SendMessage(message);
+            }
+        }
+
+        /// <summary>
+        /// 把在线玩家当前状态保存到数据库
+        /// 当前版本先保存地图和坐标
+        /// </summary>
+        private void SaveOnlinePlayerState(OnlinePlayer player)
+        {
+            if (player == null)
+            {
+                return;
+            }
+
+            try
+            {
+                _characterRepository.UpdateCharacterPosition(
+                    player.CharacterId,
+                    player.MapId,
+                    player.PosX,
+                    player.PosY,
+                    player.PosZ
+                );
+
+                Logger.Info($"SaveOnlinePlayerState success: CharacterId={player.CharacterId}, MapId={player.MapId}, Pos=({player.PosX}, {player.PosY}, {player.PosZ})");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"SaveOnlinePlayerState failed: CharacterId={player.CharacterId}, Error={ex.Message}");
+                Logger.Error(ex.ToString());
             }
         }
     }

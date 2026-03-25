@@ -48,10 +48,16 @@ public class PlayerMovementController : MonoBehaviour
         {
             move.Normalize();//将移动方向向量归一化，使其长度为1
             _animator.SetBool("Walk", true);//设置动画参数，播放行走动画
-            if (Input.GetKeyDown(KeyCode.LeftShift))//如果按下左Shift键，切换到跑步状态
+            if (Input.GetKey(KeyCode.LeftShift))//如果按下左Shift键，切换到跑步状态
             {
                 _moveSpeed = 4f;
-                _animator.SetBool("Run", true);//设置动画参数，播放跑步动画
+                _animator.SetBool("Run", true);
+            }
+            else
+            {
+                _moveSpeed = 1.5f;
+                _animator.SetBool("Walk", true);
+                _animator.SetBool("Run", false);
             }
         }
         else

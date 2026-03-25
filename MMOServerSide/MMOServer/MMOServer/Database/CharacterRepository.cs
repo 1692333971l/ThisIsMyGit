@@ -1,7 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
 using MMOServer.Models;
-using System;
-using System.Collections.Generic;
 
 namespace MMOServer.Database
 {
@@ -209,6 +207,36 @@ namespace MMOServer.Database
                     cmd.Parameters.AddWithValue("@PosZ", entity.PosZ);
 
                     return (int)cmd.ExecuteScalar();
+                }
+            }
+        }
+        /// <summary>
+        /// 更新角色坐标与地图
+        /// </summary>
+        public void UpdateCharacterPosition(int characterId, int mapId, float posX, float posY, float posZ)
+        {
+            using (SqlConnection conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+
+                string sql = @"
+            UPDATE dbo.Characters
+            SET
+                MapId = @MapId,
+                PosX  = @PosX,
+                PosY  = @PosY,
+                PosZ  = @PosZ
+            WHERE Id = @CharacterId";
+
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@CharacterId", characterId);
+                    cmd.Parameters.AddWithValue("@MapId", mapId);
+                    cmd.Parameters.AddWithValue("@PosX", posX);
+                    cmd.Parameters.AddWithValue("@PosY", posY);
+                    cmd.Parameters.AddWithValue("@PosZ", posZ);
+
+                    cmd.ExecuteNonQuery();
                 }
             }
         }

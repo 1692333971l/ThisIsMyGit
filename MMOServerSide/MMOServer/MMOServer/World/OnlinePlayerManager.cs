@@ -135,7 +135,8 @@ namespace MMOServer.World
                 PosY = player.PosY,// 当前坐标 Y
                 PosZ = player.PosZ,// 当前坐标 Z
                 RotY = player.RotY,// 当前朝向（绕Y轴旋转角度）
-                IsMoving = player.IsMoving// 当前是否在移动
+                IsMoving = player.IsMoving,// 当前是否在移动
+                IsRunning = player.IsRunning// 当前是否在跑动
             };
         }
     }

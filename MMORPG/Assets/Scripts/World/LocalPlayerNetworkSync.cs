@@ -48,6 +48,11 @@ public class LocalPlayerNetworkSync : MonoBehaviour
     private bool _lastIsMoving;
 
     /// <summary>
+    /// 上一次发送给服务端的“是否在跑动”状态
+    /// </summary>
+    private bool _lastIsRunning;
+
+    /// <summary>
     /// 当前本地角色的角色信息
     /// 主要是为了拿 CharacterId，发同步包时需要告诉服务端“是谁在移动”
     /// </summary>
@@ -126,15 +131,17 @@ public class LocalPlayerNetworkSync : MonoBehaviour
         // -------------------------
 
         // 默认先认为当前不在移动
-        bool isMoving = false;
+        bool isWalking = false;
+        bool isRunning = false;
 
         // 如果 Animator 存在，则通过动画参数判断是否在移动
         if (_animator != null)
         {
-            // 只要 Walk 或 Run 有一个为 true，就认为角色在移动
-            isMoving = _animator.GetBool("Walk") || _animator.GetBool("Run");
+            isWalking = _animator.GetBool("Walk");
+            isRunning = _animator.GetBool("Run");
         }
 
+        bool isMoving = isWalking || isRunning;
         // -------------------------
         // 第二步：读取当前位置和朝向
         // -------------------------
@@ -153,10 +160,12 @@ public class LocalPlayerNetworkSync : MonoBehaviour
         // 1. 当前位置和上次位置相差超过 0.02
         // 2. 当前朝向和上次朝向差值超过 1 度
         // 3. 当前移动状态和上次不同
+        // 3. 当前跑动状态和上次不同
         bool changed =
             Vector3.Distance(currentPos, _lastPos) > 0.02f ||
             Mathf.Abs(currentRotY - _lastRotY) > 1f ||
-            isMoving != _lastIsMoving;
+            isMoving != _lastIsMoving ||
+            isRunning != _lastIsRunning;
 
         // 如果状态没有变化，则不需要发包
         if (!changed)
@@ -182,7 +191,8 @@ public class LocalPlayerNetworkSync : MonoBehaviour
             RotY = currentRotY,
 
             // 当前是否在移动
-            IsMoving = isMoving
+            IsMoving = isMoving,
+            IsRunning = isRunning
         };
 
         // -------------------------
@@ -216,5 +226,8 @@ public class LocalPlayerNetworkSync : MonoBehaviour
 
         // 把当前移动状态记下来
         _lastIsMoving = isMoving;
+
+        // 把当前跑动状态记下来
+        _lastIsRunning = isRunning;
     }
 }

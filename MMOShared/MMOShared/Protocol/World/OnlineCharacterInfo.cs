@@ -24,5 +24,7 @@ namespace Protocol
         public float RotY;
         //是否移动
         public bool IsMoving;
+        //是否跑动
+        public bool IsRunning;
     }
 }

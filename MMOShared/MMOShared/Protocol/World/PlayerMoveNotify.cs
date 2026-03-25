@@ -14,5 +14,6 @@ namespace Protocol
 
         public float RotY;
         public bool IsMoving;
+        public bool IsRunning;
     }
 }

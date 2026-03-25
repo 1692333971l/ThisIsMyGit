@@ -27,13 +27,13 @@ public class ClientMessageDispatcher
             case MessageId.EnterGameResponse://进入游戏响应
                 GameApp.Instance.WorldService.HandleEnterGameResponse(message);
                 break;
-            case MessageId.PlayerEnterNotify:
+            case MessageId.PlayerEnterNotify://角色进入通知
                 GameApp.Instance.WorldService.HandlePlayerEnterNotify(message);
                 break;
-            case MessageId.PlayerLeaveNotify:
+            case MessageId.PlayerLeaveNotify://角色离开通知
                 GameApp.Instance.WorldService.HandlePlayerLeaveNotify(message);
                 break;
-            case MessageId.PlayerMoveNotify:
+            case MessageId.PlayerMoveNotify://角色移动通知
                 GameApp.Instance.WorldService.HandlePlayerMoveNotify(message);
                 break;
             default:

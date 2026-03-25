@@ -83,7 +83,8 @@ public class RemotePlayerSync : MonoBehaviour
     /// <param name="position">网络同步过来的目标位置</param>
     /// <param name="rotY">网络同步过来的目标Y轴朝向</param>
     /// <param name="isMoving">网络同步过来的是否在移动</param>
-    public void ApplyNetState(Vector3 position, float rotY, bool isMoving)
+    /// <param name="isRunning">网络同步过来的是否在跑动</param>
+    public void ApplyNetState(Vector3 position, float rotY, bool isMoving, bool isRunning)
     {
         // 更新目标位置
         _targetPosition = position;
@@ -97,15 +98,9 @@ public class RemotePlayerSync : MonoBehaviour
         // 如果当前角色身上有 Animator，就同步动画参数
         if (_animator != null)
         {
-            // 如果远端玩家处于移动状态，则播放 Walk 动画
-            _animator.SetBool("Walk", isMoving);
-
-            // 如果不在移动，则把 Run 也关掉
-            // 避免远端角色停下后还残留跑步状态
-            if (!isMoving)
-            {
-                _animator.SetBool("Run", false);
-            }
+            // 如果远端玩家处于移动状态，则根据状态播放 Walk Run 动画
+            _animator.SetBool("Walk", isMoving && !isRunning);
+            _animator.SetBool("Run", isRunning);
         }
     }
 
