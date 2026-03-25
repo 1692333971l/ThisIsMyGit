@@ -25,16 +25,16 @@ public class ClientMessageDispatcher
                 GameApp.Instance.CharacterService.HandleGetCharacterListResponse(message);
                 break;
             case MessageId.EnterGameResponse://进入游戏响应
-                GameApp.Instance.WorldSevice.HandleEnterGameResponse(message);
+                GameApp.Instance.WorldService.HandleEnterGameResponse(message);
                 break;
             case MessageId.PlayerEnterNotify:
-                GameApp.Instance.WorldSevice.HandlePlayerEnterNotify(message);
+                GameApp.Instance.WorldService.HandlePlayerEnterNotify(message);
                 break;
             case MessageId.PlayerLeaveNotify:
-                GameApp.Instance.WorldSevice.HandlePlayerLeaveNotify(message);
+                GameApp.Instance.WorldService.HandlePlayerLeaveNotify(message);
                 break;
             case MessageId.PlayerMoveNotify:
-                GameApp.Instance.WorldSevice.HandlePlayerMoveNotify(message);
+                GameApp.Instance.WorldService.HandlePlayerMoveNotify(message);
                 break;
             default:
                 Debug.LogWarning($"ClientMessageDispatcher: unknown message id = {message.MessageId}");

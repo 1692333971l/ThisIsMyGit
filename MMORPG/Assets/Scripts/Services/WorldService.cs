@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 
 //世界消息Service
-public class WorldSevice
+public class WorldService
 {
     public event Action<EnterGameResponse> OnEnterGameResponse;//进入主城响应事件
     public event Action<PlayerEnterNotify> OnPlayerEnterNotify;//玩家加入广播事件

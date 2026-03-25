@@ -12,7 +12,7 @@ public class GameApp : MonoBehaviour
 
     public UserService UserService { get; private set; }//登录注册业务层
     public CharacterService CharacterService { get; private set; }//角色选择创建业务层
-    public WorldSevice WorldSevice { get; private set; }//世界消息业务层
+    public WorldService WorldService { get; private set; }//世界消息业务层
     public SceneLoaderManager SceneLoaderManager { get; private set; }//场景切换管理器
     public PlayerCharacterManager PlayerCharacterManager { get; private set; }//玩家当前控制角色管理器
     public PlayerSpawnManager PlayerSpawnManager { get; private set; }//玩家生成管理器
@@ -53,7 +53,7 @@ public class GameApp : MonoBehaviour
 
         UserService             = new UserService();
         CharacterService        = new CharacterService();
-        WorldSevice             = new WorldSevice();
+        WorldService            = new WorldService();
 
         SceneLoaderManager      = new SceneLoaderManager();
         PlayerCharacterManager  = new PlayerCharacterManager();

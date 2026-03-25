@@ -32,16 +32,16 @@ public class MainCityEntryController : MonoBehaviour
     private void OnEnable()
     {
         // 订阅“进入游戏响应”事件
-        GameApp.Instance.WorldSevice.OnEnterGameResponse += HandleEnterGameResponse;
+        GameApp.Instance.WorldService.OnEnterGameResponse += HandleEnterGameResponse;
 
         // 订阅“玩家进入通知”事件
-        GameApp.Instance.WorldSevice.OnPlayerEnterNotify += HandlePlayerEnterNotify;
+        GameApp.Instance.WorldService.OnPlayerEnterNotify += HandlePlayerEnterNotify;
 
         // 订阅“玩家离开通知”事件
-        GameApp.Instance.WorldSevice.OnPlayerLeaveNotify += HandlePlayerLeaveNotify;
+        GameApp.Instance.WorldService.OnPlayerLeaveNotify += HandlePlayerLeaveNotify;
 
         // 订阅“玩家移动通知”事件
-        GameApp.Instance.WorldSevice.OnPlayerMoveNotify += HandlePlayerMoveNotify;
+        GameApp.Instance.WorldService.OnPlayerMoveNotify += HandlePlayerMoveNotify;
     }
 
     /// <summary>
@@ -58,16 +58,16 @@ public class MainCityEntryController : MonoBehaviour
         if (GameApp.Instance == null) return;
 
         // 取消订阅“进入游戏响应”
-        GameApp.Instance.WorldSevice.OnEnterGameResponse -= HandleEnterGameResponse;
+        GameApp.Instance.WorldService.OnEnterGameResponse -= HandleEnterGameResponse;
 
         // 取消订阅“玩家进入通知”
-        GameApp.Instance.WorldSevice.OnPlayerEnterNotify -= HandlePlayerEnterNotify;
+        GameApp.Instance.WorldService.OnPlayerEnterNotify -= HandlePlayerEnterNotify;
 
         // 取消订阅“玩家离开通知”
-        GameApp.Instance.WorldSevice.OnPlayerLeaveNotify -= HandlePlayerLeaveNotify;
+        GameApp.Instance.WorldService.OnPlayerLeaveNotify -= HandlePlayerLeaveNotify;
 
         // 取消订阅“玩家移动通知”
-        GameApp.Instance.WorldSevice.OnPlayerMoveNotify -= HandlePlayerMoveNotify;
+        GameApp.Instance.WorldService.OnPlayerMoveNotify -= HandlePlayerMoveNotify;
     }
 
     /// <summary>
@@ -90,7 +90,7 @@ public class MainCityEntryController : MonoBehaviour
         // 服务端收到后会返回：
         // 1. 当前玩家自己的角色信息
         // 2. 当前地图中已经在线的其他玩家列表
-        GameApp.Instance.WorldSevice.SendEnterGame();
+        GameApp.Instance.WorldService.SendEnterGame();
     }
 
     /// <summary>
