@@ -30,5 +30,14 @@ namespace Protocol
         PlayerMoveNotify = 1013,
         // 玩家退出请求
         PlayerExitRequest = 1014,
+        // 获取背包
+        GetInventoryRequest = 1015,
+        GetInventoryResponse = 1016,
+        // 测试添加道具
+        AddItemRequest = 1017,
+        AddItemResponse = 1018,
+        // 使用道具
+        UseItemRequest = 1019,
+        UseItemResponse = 1020,
     }
 }

@@ -1,5 +1,4 @@
-﻿using MMOServer.Config;
-using MMOServer.Core;
+﻿using MMOServer.Core;
 using MMOServer.Database;
 using MMOServer.Models;
 using MMOServer.Network;

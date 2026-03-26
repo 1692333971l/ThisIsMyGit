@@ -1,5 +1,6 @@
 using Protocol;
 using UnityEngine;
+using UnityEngine.UI;
 
 // 主城入口控制器
 // 作用：作为“主城场景中的多人同步总入口”
@@ -15,11 +16,11 @@ using UnityEngine;
 // “主城场景里的联机流程总调度器”
 public class MainCityEntryController : MonoBehaviour
 {
-    /// <summary>
-    /// 跟随摄像机组件
-    /// 用于在本地玩家生成后，把摄像机目标绑定到本地玩家身上
-    /// </summary>
+    // 跟随摄像机组件
     [SerializeField] private CameraFollow _cameraFollow;
+    
+    // 角色呼出面板
+    [SerializeField] private Image _characterPanel;
 
     /// <summary>
     /// Unity 生命周期：OnEnable
@@ -77,6 +78,7 @@ public class MainCityEntryController : MonoBehaviour
     /// 当主城场景刚加载完时，执行主城联机初始化流程：
     /// 1. 清掉之前可能残留的远端玩家对象
     /// 2. 向服务端发送 EnterGame 请求
+    /// 3. 向服务端发送 GetInventory 请求
     /// 
     /// 为什么先 ClearAll：
     /// 避免切场景、重新进入主城时，旧的远端玩家对象残留在场景中
@@ -91,6 +93,9 @@ public class MainCityEntryController : MonoBehaviour
         // 1. 当前玩家自己的角色信息
         // 2. 当前地图中已经在线的其他玩家列表
         GameApp.Instance.WorldService.SendEnterGame();
+
+        //获取当前玩家背包
+        GameApp.Instance.InventoryService.SendGetInventoryRequest();
     }
 
     /// <summary>
@@ -126,6 +131,9 @@ public class MainCityEntryController : MonoBehaviour
 
         // 获取本地玩家的移动控制器
         PlayerMovementController movementController = playerObject.GetComponent<PlayerMovementController>();
+
+        // 将角色可操作面板传入角色控制器
+        playerObject.GetComponent<PlayerInputController>().Init(_characterPanel, _cameraFollow);
 
         // 如果存在移动控制器，则把摄像机 Transform 传给它
         // 因为你的移动方向是基于摄像机前后左右来计算的

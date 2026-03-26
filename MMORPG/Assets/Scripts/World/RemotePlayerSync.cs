@@ -99,7 +99,7 @@ public class RemotePlayerSync : MonoBehaviour
         if (_animator != null)
         {
             // 如果远端玩家处于移动状态，则根据状态播放 Walk Run 动画
-            _animator.SetBool("Walk", isMoving && !isRunning);
+            _animator.SetBool("Walk", isMoving);
             _animator.SetBool("Run", isRunning);
         }
     }

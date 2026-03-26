@@ -1,0 +1,41 @@
+[
+  {
+    "ItemId": 1001,
+    "ItemName": "\u5C0F\u578B\u751F\u547D\u836F\u6C34",
+    "ItemType": 1,
+    "MaxStackCount": 20,
+    "SellPrice": 10,
+    "Quality": 1,
+    "IconPath": "Icons/Items/hp_small",
+    "Description": "\u56DE\u590D\u5C11\u91CF\u751F\u547D\u503C",
+    "CanUse": 1,
+    "UseEffectType": 1,
+    "UseEffectValue": 50
+  },
+  {
+    "ItemId": 1002,
+    "ItemName": "\u5C0F\u578B\u6CD5\u529B\u836F\u6C34",
+    "ItemType": 1,
+    "MaxStackCount": 20,
+    "SellPrice": 12,
+    "Quality": 1,
+    "IconPath": "Icons/Items/mp_small",
+    "Description": "\u56DE\u590D\u5C11\u91CF\u6CD5\u529B\u503C",
+    "CanUse": 1,
+    "UseEffectType": 2,
+    "UseEffectValue": 30
+  },
+  {
+    "ItemId": 2001,
+    "ItemName": "\u72FC\u7259",
+    "ItemType": 2,
+    "MaxStackCount": 99,
+    "SellPrice": 5,
+    "Quality": 1,
+    "IconPath": "Icons/Items/wolf_tooth",
+    "Description": "\u666E\u901A\u6750\u6599",
+    "CanUse": 0,
+    "UseEffectType": 0,
+    "UseEffectValue": 0
+  }
+]

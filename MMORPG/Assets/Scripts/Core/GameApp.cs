@@ -4,19 +4,26 @@ using UnityEngine;
 //客户端总入口: 客户端应用启动后，所有核心模块都由它统一创建和管理
 public class GameApp : MonoBehaviour
 {
+    //全局核心服务
     public static GameApp Instance { get; private set; }//客户端总入口，单例
     public NetClient NetClient { get; private set; }//客户端网络层
     public ClientMessageDispatcher ClientMessageDispatcher { get; private set; }//客户端消息分发层
     public UserSession UserSession { get; private set; }//持久化数据
-    public RemotePlayerManager RemotePlayerManager { get; private set; }//场景里其他玩家对象的总表
-
+    public SceneLoaderManager SceneLoaderManager { get; private set; }//场景切换管理器
+    //业务层
     public UserService UserService { get; private set; }//登录注册业务层
     public CharacterService CharacterService { get; private set; }//角色选择创建业务层
     public WorldService WorldService { get; private set; }//世界消息业务层
-    public SceneLoaderManager SceneLoaderManager { get; private set; }//场景切换管理器
-    public PlayerCharacterManager PlayerCharacterManager { get; private set; }//玩家当前控制角色管理器
+    public InventoryService InventoryService { get; private set; }//背包业务层
+    //当前玩家数据交互服务
+    public PlayerCharacterManager PlayerCharacterManager { get; private set; }//玩家当前角色信息管理器
+    public PlayerInventoryManager PlayerInventoryManager { get; private set; }//玩家当前角色背包管理器
+    //联机服务
     public PlayerSpawnManager PlayerSpawnManager { get; private set; }//玩家生成管理器
+    public RemotePlayerManager RemotePlayerManager { get; private set; }//场景里其他玩家对象的总表
+    //配置表
     public ProfessionConfigManager ProfessionConfigManager { get; private set; }//职业配置表管理器
+    public ItemConfigManager ItemConfigManager { get; private set; }//道具配置表管理器
 
     private bool _hasSentExit = false;
     public string ServerIp { get; private set; } = "127.0.0.1";
@@ -46,19 +53,25 @@ public class GameApp : MonoBehaviour
     }
     private void RegistrationServices()
     {
+        //全局核心服务
         NetClient               = new NetClient();
         ClientMessageDispatcher = new ClientMessageDispatcher();
         UserSession             = new UserSession();
-        RemotePlayerManager     = new RemotePlayerManager();
-
+        SceneLoaderManager      = new SceneLoaderManager();
+        //业务层
         UserService             = new UserService();
         CharacterService        = new CharacterService();
         WorldService            = new WorldService();
-
-        SceneLoaderManager      = new SceneLoaderManager();
+        InventoryService        = new InventoryService();
+        //当前玩家数据交互服务
         PlayerCharacterManager  = new PlayerCharacterManager();
+        PlayerInventoryManager  = new PlayerInventoryManager();
+        //联机服务
         PlayerSpawnManager      = new PlayerSpawnManager();
+        RemotePlayerManager     = new RemotePlayerManager();
+        //配置表
         ProfessionConfigManager = new ProfessionConfigManager();
+        ItemConfigManager = new ItemConfigManager();
     }
     //链接服务端
     private void NetClientConnect()

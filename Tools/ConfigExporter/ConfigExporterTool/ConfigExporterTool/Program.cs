@@ -13,9 +13,12 @@ namespace ConfigExporter
                 string toolProjectDir = Path.GetFullPath(Path.Combine(currentDir, "..", "..", "..", ".."));
                 string repoRootDir = Path.GetFullPath(Path.Combine(toolProjectDir, "..", "..", ".."));
 
-                string excelPath = Path.Combine(repoRootDir, "ConfigExcels", "Profession.xlsx");
+                // ---------------------------
+                // Profession.xlsx
+                // ---------------------------
+                string professionExcelPath = Path.Combine(repoRootDir, "ConfigExcels", "Profession.xlsx");
 
-                string clientOutputPath = Path.Combine(
+                string professionClientOutputPath = Path.Combine(
                     repoRootDir,
                     "MMORPG",
                     "Assets",
@@ -25,7 +28,7 @@ namespace ConfigExporter
                     "ProfessionConfig.json"
                 );
 
-                string serverOutputPath = Path.Combine(
+                string professionServerOutputPath = Path.Combine(
                     repoRootDir,
                     "MMOServerSide",
                     "MMOServer",
@@ -35,8 +38,36 @@ namespace ConfigExporter
                     "ProfessionConfig.json"
                 );
 
-                ProfessionExporter exporter = new ProfessionExporter();
-                exporter.Export(excelPath, clientOutputPath, serverOutputPath);
+                ProfessionExporter professionExporter = new ProfessionExporter();
+                professionExporter.Export(professionExcelPath, professionClientOutputPath, professionServerOutputPath);
+
+                // ---------------------------
+                // Item.xlsx
+                // ---------------------------
+                string itemExcelPath = Path.Combine(repoRootDir, "ConfigExcels", "Item.xlsx");
+
+                string itemClientOutputPath = Path.Combine(
+                    repoRootDir,
+                    "MMORPG",
+                    "Assets",
+                    "Resources",
+                    "Config",
+                    "Generated",
+                    "ItemConfig.json"
+                );
+
+                string itemServerOutputPath = Path.Combine(
+                    repoRootDir,
+                    "MMOServerSide",
+                    "MMOServer",
+                    "MMOServer",
+                    "Config",
+                    "Generated",
+                    "ItemConfig.json"
+                );
+
+                ItemExporter itemExporter = new ItemExporter();
+                itemExporter.Export(itemExcelPath, itemClientOutputPath, itemServerOutputPath);
 
                 Console.WriteLine("全部导出完成。");
             }

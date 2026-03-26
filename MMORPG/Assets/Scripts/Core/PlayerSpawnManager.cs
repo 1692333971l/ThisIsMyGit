@@ -72,6 +72,15 @@ public class PlayerSpawnManager
             localSync = playerObject.AddComponent<LocalPlayerNetworkSync>();
         }
 
+        // 尝试同步本地输入控制器
+        PlayerInputController inputController = playerObject.GetComponent<PlayerInputController>();
+
+        // 如果没有运行时挂载
+        if (inputController == null)
+        {
+            inputController = playerObject.AddComponent<PlayerInputController>();
+        }
+
         // 初始化本地同步器，传入当前角色信息（主要用于拿 CharacterId）
         localSync.Init(characterInfo);
 

@@ -10,9 +10,11 @@ namespace MMOServer.Core
         public static GameServer Instance { get; private set; }
         public NetServer NetServer { get; private set; }
         public ProfessionConfigManager ProfessionConfigManager { get; private set; }
+        public ItemConfigManager ItemConfigManager { get; private set; }
         public UserService UserService { get; private set; }
         public CharacterService CharacterService { get; private set; }
         public WorldService WorldService { get; private set; }
+        public InventoryService InventoryService { get; private set; }
         public OnlinePlayerManager OnlinePlayerManager { get; private set; }
 
         public GameServer()
@@ -26,9 +28,11 @@ namespace MMOServer.Core
 
             NetServer               = new NetServer();
             ProfessionConfigManager = new ProfessionConfigManager();
+            ItemConfigManager       = new ItemConfigManager();
             UserService             = new UserService();
             CharacterService        = new CharacterService();
             WorldService            = new WorldService();
+            InventoryService        = new InventoryService();
             OnlinePlayerManager     = new OnlinePlayerManager();
         }
 
@@ -51,6 +55,8 @@ namespace MMOServer.Core
             string repoRootDir = Path.GetFullPath(Path.Combine(currentDir, "..", "..", ".."));
             string configPath = Path.Combine(repoRootDir, "Config", "Generated", "ProfessionConfig.json");
             ProfessionConfigManager.Load(configPath);
+            string itemConfigPath = Path.Combine(repoRootDir, "Config", "Generated", "ItemConfig.json");
+            ItemConfigManager.Load(itemConfigPath);
         }
     }
 }

@@ -34,6 +34,9 @@ namespace MMOServer.Network
                 case MessageId.PlayerExitRequest:
                     GameServer.Instance.WorldService.HandlePlayerExit(requestMessage, session);
                     return null;
+
+                case MessageId.GetInventoryRequest:
+                    return GameServer.Instance.InventoryService.HandleGetInventory(requestMessage);
                 default:
                     Logger.Warn($"Unknown message id: {requestMessage.MessageId}");
                     return null;
