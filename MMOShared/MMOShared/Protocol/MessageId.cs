@@ -33,11 +33,8 @@ namespace Protocol
         // 获取背包
         GetInventoryRequest = 1015,
         GetInventoryResponse = 1016,
-        // 测试添加道具
-        AddItemRequest = 1017,
-        AddItemResponse = 1018,
         // 使用道具
-        UseItemRequest = 1019,
-        UseItemResponse = 1020,
+        UseItemRequest = 1017,
+        UseItemResponse = 1018,
     }
 }

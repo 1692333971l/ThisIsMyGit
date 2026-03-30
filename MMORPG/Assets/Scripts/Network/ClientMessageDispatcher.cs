@@ -39,6 +39,9 @@ public class ClientMessageDispatcher
             case MessageId.GetInventoryResponse://获取背包响应
                 GameApp.Instance.InventoryService.HandleGetInventoryResponse(message);
                 break;
+            case MessageId.UseItemResponse://获取背包响应
+                GameApp.Instance.InventoryService.HandleUseItemResponse(message);
+                break;
             default:
                 Debug.LogWarning($"ClientMessageDispatcher: unknown message id = {message.MessageId}");
                 break;

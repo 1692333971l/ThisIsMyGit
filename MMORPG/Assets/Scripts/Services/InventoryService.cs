@@ -5,6 +5,7 @@ using UnityEngine;
 //背包业务层
 public class InventoryService
 {
+    public event Action<UseItemResponse> OnUseItemResponse;//使用物品响应事件
     //获取背包请求
     public void SendGetInventoryRequest()
     {
@@ -24,5 +25,27 @@ public class InventoryService
     {
         GetInventoryResponse response = JsonUtility.FromJson<GetInventoryResponse>(message.BodyJson);
         GameApp.Instance.PlayerInventoryManager.SetPlayerInventoryDict(response.ItemList);
+    }
+    //使用物品请求
+    public void SendUseItemRequest(int slotIndex)
+    {
+        UseItemRequest useItemRequest = new UseItemRequest()
+        {
+            CharacterId = GameApp.Instance.PlayerCharacterManager.GetCharacterInfo().CharacterId,
+            SlotIndex = slotIndex
+        };
+        NetMessage message = new NetMessage()
+        {
+            MessageId = (int)MessageId.UseItemRequest,
+            BodyJson = JsonUtility.ToJson(useItemRequest)
+        };
+        GameApp.Instance.NetClient.SendMessage(message);
+    }
+    //使用物品响应
+    public void HandleUseItemResponse(NetMessage message)
+    {
+        UseItemResponse response = JsonUtility.FromJson<UseItemResponse>(message.BodyJson);
+        GameApp.Instance.PlayerInventoryManager.SetPlayerInventoryDict(response.ItemList);
+        OnUseItemResponse?.Invoke(response);
     }
 }

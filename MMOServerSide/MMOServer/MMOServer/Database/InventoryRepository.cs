@@ -54,5 +54,93 @@ namespace MMOServer.Database
 
             return result;
         }
+
+        /// <summary>
+        /// 根据角色ID和格子索引获取单个背包物品
+        /// </summary>
+        public InventoryItemEntity GetByCharacterIdAndSlotIndex(int characterId, int slotIndex)
+        {
+            using (SqlConnection conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+
+                string sql = @"
+                    SELECT
+                        Id,
+                        CharacterId,
+                        ItemId,
+                        SlotIndex,
+                        Count,
+                        IsBound
+                    FROM dbo.InventoryItems
+                    WHERE CharacterId = @CharacterId AND SlotIndex = @SlotIndex";
+
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@CharacterId", characterId);
+                    cmd.Parameters.AddWithValue("@SlotIndex", slotIndex);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (!reader.Read())
+                        {
+                            return null;
+                        }
+
+                        return new InventoryItemEntity
+                        {
+                            Id = reader.GetInt32(0),
+                            CharacterId = reader.GetInt32(1),
+                            ItemId = reader.GetInt32(2),
+                            SlotIndex = reader.GetInt32(3),
+                            Count = reader.GetInt32(4),
+                            IsBound = reader.GetBoolean(5)
+                        };
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 更新某个背包物品数量
+        /// </summary>
+        public void UpdateItemCount(int inventoryItemId, int newCount)
+        {
+            using (SqlConnection conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+
+                string sql = @"
+                    UPDATE dbo.InventoryItems
+                    SET Count = @Count
+                    WHERE Id = @Id";
+
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Id", inventoryItemId);
+                    cmd.Parameters.AddWithValue("@Count", newCount);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 删除某个背包物品记录
+        /// </summary>
+        public void DeleteById(int inventoryItemId)
+        {
+            using (SqlConnection conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+
+                string sql = @"DELETE FROM dbo.InventoryItems WHERE Id = @Id";
+
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Id", inventoryItemId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
     }
 }

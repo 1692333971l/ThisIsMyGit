@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class PlayerInventoryManager
 {
     private Dictionary<int, InventoryItemInfo> _playerInventoryDict = new Dictionary<int, InventoryItemInfo>();
+    //初始化背包数据
     public void SetPlayerInventoryDict(List<InventoryItemInfo> itemList)
     {
         _playerInventoryDict.Clear();
@@ -19,6 +20,7 @@ public class PlayerInventoryManager
             _playerInventoryDict[item.SlotIndex] = item;
         }
     }
+    //获取背包全部数据
     public Dictionary<int, InventoryItemInfo> GetPlayerInventoryDict()
     {
         return _playerInventoryDict; 

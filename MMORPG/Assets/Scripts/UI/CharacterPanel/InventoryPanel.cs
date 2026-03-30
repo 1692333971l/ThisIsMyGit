@@ -7,29 +7,43 @@ public class InventoryPanel : MonoBehaviour
 {
     [SerializeField] private Transform _inventoryPanelRoot;//背包格子根节点
     [SerializeField] private InventorySlotItem _inventorySlotItem;//背包格子
+    [SerializeField] private InventoryItemOperateMenu _inventoryItemOperateMenu;//道具操作菜单
 
     private int _maxSlotCount = 72;
 
-    public void OnEnable()
+    private void Awake()
     {
         //清空背包列表
         for (int i = _inventoryPanelRoot.childCount - 1; i >= 0; i--)
         {
             Destroy(_inventoryPanelRoot.GetChild(i).gameObject);
         }
-
-        Dictionary<int, InventoryItemInfo> inventoryDict = GameApp.Instance.PlayerInventoryManager.GetPlayerInventoryDict();
-        if (inventoryDict.Count == 0)
-        {
-            return;
-        }
         //生成列表项
         for (int i = 0; i < _maxSlotCount; i++)
         {
             InventorySlotItem item = Instantiate(_inventorySlotItem, _inventoryPanelRoot);
-
+        }
+    }
+    public void OnEnable()
+    {
+        Init();
+        GameApp.Instance.InventoryService.OnUseItemResponse += HandleUseItemResponse;
+    }
+    private void OnDisable()
+    {
+        GameApp.Instance.InventoryService.OnUseItemResponse -= HandleUseItemResponse;
+    }
+    private void Init()
+    {
+        Dictionary<int, InventoryItemInfo> inventoryDict = GameApp.Instance.PlayerInventoryManager.GetPlayerInventoryDict();
+        //刷新数据
+        for (int i = 0; i < _maxSlotCount; i++)
+        {
             InventoryItemInfo inventoryItemInfo = GameApp.Instance.PlayerInventoryManager.GetPlayerInventoryBySlotIndex(i);
+            InventorySlotItem item = _inventoryPanelRoot.GetChild(i).gameObject.GetComponent<InventorySlotItem>();
 
+            item._onClickCallback -= OnClickInventorySlotItem;
+            item._onClickCallback += OnClickInventorySlotItem;
             if (inventoryItemInfo != null)
             {
                 item.Init(inventoryItemInfo);
@@ -39,5 +53,35 @@ public class InventoryPanel : MonoBehaviour
                 item.InitEmpty(i);
             }
         }
+    }
+    //格子点击事件
+    private void OnClickInventorySlotItem(InventoryItemInfo inventoryItemInfo)
+    {
+        if (inventoryItemInfo == null)
+        {
+            _inventoryItemOperateMenu.gameObject.SetActive(false);
+            return;
+        }
+        _inventoryItemOperateMenu.gameObject.SetActive(true);
+        _inventoryItemOperateMenu.Init(inventoryItemInfo);
+        _inventoryItemOperateMenu._onClickUseButton -= OnClickUseButton;
+        _inventoryItemOperateMenu._onClickUseButton += OnClickUseButton;
+        _inventoryItemOperateMenu._onSellUseButton -= OnClickSellButton;
+        _inventoryItemOperateMenu._onSellUseButton += OnClickSellButton;
+    }
+    //使用按钮点击事件
+    private void OnClickUseButton(InventoryItemInfo inventoryItemInfo)
+    {
+        GameApp.Instance.InventoryService.SendUseItemRequest(inventoryItemInfo.SlotIndex);
+    }
+    //使用物品响应事件
+    private void HandleUseItemResponse(UseItemResponse useItemResponse)
+    {
+        Init();
+    }
+    //出售按钮点击事件
+    private void OnClickSellButton(int count, InventoryItemInfo inventoryItemInfo)
+    {
+        
     }
 }
