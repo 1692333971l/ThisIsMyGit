@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+//道具操作菜单
 public class InventoryItemOperateMenu : MonoBehaviour
 {
     [SerializeField] private TMP_Text _description;//详细描述
@@ -12,13 +13,13 @@ public class InventoryItemOperateMenu : MonoBehaviour
 
     private InventoryItemInfo _inventoryItemInfo;//格子信息
 
-    public event Action<InventoryItemInfo> _onClickUseButton;
-    public event Action<int, InventoryItemInfo> _onSellUseButton;
+    public event Action<InventoryItemInfo> OnUseClicked;
+    public event Action<int, InventoryItemInfo> OnSellClicked;
 
     private void Start()
     {
         _useButton.onClick.AddListener(OnClickUseButton);
-        _sellButton.onClick.AddListener(OnSellUseButton);
+        _sellButton.onClick.AddListener(OnClickSellButton);
     }
     public void Init(InventoryItemInfo inventoryItemInfo)
     {
@@ -37,10 +38,10 @@ public class InventoryItemOperateMenu : MonoBehaviour
     }
     private void OnClickUseButton()
     {
-        _onClickUseButton?.Invoke(_inventoryItemInfo);
+        OnUseClicked?.Invoke(_inventoryItemInfo);
     }
-    private void OnSellUseButton()
+    private void OnClickSellButton()
     {
-        _onSellUseButton?.Invoke(1, _inventoryItemInfo);
+        OnSellClicked?.Invoke(1, _inventoryItemInfo);
     }
 }

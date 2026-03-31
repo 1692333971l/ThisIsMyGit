@@ -2,6 +2,7 @@
 using MMOServer.Core;
 using MMOServer.Database;
 using MMOServer.Models;
+using MMOServer.Network;
 using Protocol;
 
 namespace MMOServer.Services
@@ -23,7 +24,7 @@ namespace MMOServer.Services
         /// <summary>
         /// 处理获取背包请求
         /// </summary>
-        public NetMessage HandleGetInventory(NetMessage requestMessage)
+        public NetMessage HandleGetInventory(NetMessage requestMessage, ClientSession session)
         {
             GetInventoryRequest request = JsonHelper.FromJson<GetInventoryRequest>(requestMessage.BodyJson);
 
@@ -35,13 +36,24 @@ namespace MMOServer.Services
                 response.Message = "背包请求参数无效";
                 response.CharacterId = 0;
                 response.ItemList = new List<InventoryItemInfo>();
+                return BuildGetInventoryResponse(response);
+            }
 
+            // session 与角色归属校验
+            if (!IsSessionCharacterValid(session, request.CharacterId))
+            {
+                Logger.Warn($"HandleGetInventory rejected: SessionCharacterId={session?.CurrentCharacterId}, RequestCharacterId={request.CharacterId}, UserId={session?.UserId}");
+
+                response.ErrorCode = (int)ErrorCode.InvalidParams;
+                response.Message = "角色身份校验失败，禁止访问其他角色背包";
+                response.CharacterId = 0;
+                response.ItemList = new List<InventoryItemInfo>();
                 return BuildGetInventoryResponse(response);
             }
 
             try
             {
-                List<InventoryItemEntity> entityList = _inventoryRepository.GetInventoryListByCharacterId(request.CharacterId);
+                List<InventoryItemEntity> entityList = _inventoryRepository.GetInventoryListByCharacterId(session.CurrentCharacterId);
 
                 List<InventoryItemInfo> itemInfoList = new List<InventoryItemInfo>();
 
@@ -52,7 +64,7 @@ namespace MMOServer.Services
 
                 response.ErrorCode = (int)ErrorCode.Success;
                 response.Message = "获取背包成功";
-                response.CharacterId = request.CharacterId;
+                response.CharacterId = session.CurrentCharacterId;
                 response.ItemList = itemInfoList;
 
                 return BuildGetInventoryResponse(response);
@@ -74,7 +86,7 @@ namespace MMOServer.Services
         /// <summary>
         /// 处理使用道具请求
         /// </summary>
-        public NetMessage HandleUseItem(NetMessage requestMessage)
+        public NetMessage HandleUseItem(NetMessage requestMessage, ClientSession session)
         {
             UseItemRequest request = JsonHelper.FromJson<UseItemRequest>(requestMessage.BodyJson);
 
@@ -90,16 +102,31 @@ namespace MMOServer.Services
                 return BuildUseItemResponse(response);
             }
 
+            // 新增：session 与角色归属校验
+            if (!IsSessionCharacterValid(session, request.CharacterId))
+            {
+                Logger.Warn($"HandleUseItem rejected: SessionCharacterId={session?.CurrentCharacterId}, RequestCharacterId={request.CharacterId}, SlotIndex={request.SlotIndex}, UserId={session?.UserId}");
+
+                response.ErrorCode = (int)ErrorCode.InvalidParams;
+                response.Message = "角色身份校验失败，禁止操作其他角色背包";
+                response.CharacterId = 0;
+                response.ItemList = new List<InventoryItemInfo>();
+                response.CharacterInfo = null;
+                return BuildUseItemResponse(response);
+            }
+
             try
             {
+                int characterId = session.CurrentCharacterId;
+
                 // 1. 先查角色
-                CharacterEntity character = _characterRepository.GetByCharacterId(request.CharacterId);
+                CharacterEntity character = _characterRepository.GetByCharacterId(characterId);
 
                 if (character == null)
                 {
                     response.ErrorCode = (int)ErrorCode.UnknownError;
                     response.Message = "角色不存在";
-                    response.CharacterId = request.CharacterId;
+                    response.CharacterId = characterId;
                     response.ItemList = new List<InventoryItemInfo>();
                     response.CharacterInfo = null;
                     return BuildUseItemResponse(response);
@@ -107,7 +134,7 @@ namespace MMOServer.Services
 
                 // 2. 查这个格子里有没有道具
                 InventoryItemEntity inventoryItem = _inventoryRepository.GetByCharacterIdAndSlotIndex(
-                    request.CharacterId,
+                    characterId,
                     request.SlotIndex
                 );
 
@@ -115,8 +142,8 @@ namespace MMOServer.Services
                 {
                     response.ErrorCode = (int)ErrorCode.UnknownError;
                     response.Message = "该格子没有可使用的道具";
-                    response.CharacterId = request.CharacterId;
-                    response.ItemList = BuildInventoryItemInfoList(request.CharacterId);
+                    response.CharacterId = characterId;
+                    response.ItemList = BuildInventoryItemInfoList(characterId);
                     response.CharacterInfo = ToCharacterInfo(character);
                     return BuildUseItemResponse(response);
                 }
@@ -127,8 +154,8 @@ namespace MMOServer.Services
                 {
                     response.ErrorCode = (int)ErrorCode.UnknownError;
                     response.Message = "道具配置不存在";
-                    response.CharacterId = request.CharacterId;
-                    response.ItemList = BuildInventoryItemInfoList(request.CharacterId);
+                    response.CharacterId = characterId;
+                    response.ItemList = BuildInventoryItemInfoList(characterId);
                     response.CharacterInfo = ToCharacterInfo(character);
                     return BuildUseItemResponse(response);
                 }
@@ -138,8 +165,8 @@ namespace MMOServer.Services
                 {
                     response.ErrorCode = (int)ErrorCode.UnknownError;
                     response.Message = "该道具不可使用";
-                    response.CharacterId = request.CharacterId;
-                    response.ItemList = BuildInventoryItemInfoList(request.CharacterId);
+                    response.CharacterId = characterId;
+                    response.ItemList = BuildInventoryItemInfoList(characterId);
                     response.CharacterInfo = ToCharacterInfo(character);
                     return BuildUseItemResponse(response);
                 }
@@ -169,14 +196,14 @@ namespace MMOServer.Services
                     default:
                         response.ErrorCode = (int)ErrorCode.UnknownError;
                         response.Message = "暂不支持该道具效果类型";
-                        response.CharacterId = request.CharacterId;
-                        response.ItemList = BuildInventoryItemInfoList(request.CharacterId);
+                        response.CharacterId = characterId;
+                        response.ItemList = BuildInventoryItemInfoList(characterId);
                         response.CharacterInfo = ToCharacterInfo(character);
                         return BuildUseItemResponse(response);
                 }
 
                 // 6. 更新角色 HP / MP
-                _characterRepository.UpdateCharacterHpMp(request.CharacterId, newHp, newMp);
+                _characterRepository.UpdateCharacterHpMp(characterId, newHp, newMp);
 
                 // 7. 扣除背包数量
                 int leftCount = inventoryItem.Count - 1;
@@ -196,8 +223,8 @@ namespace MMOServer.Services
                 // 9. 返回最新结果
                 response.ErrorCode = (int)ErrorCode.Success;
                 response.Message = $"使用道具成功：{itemConfig.ItemName}";
-                response.CharacterId = request.CharacterId;
-                response.ItemList = BuildInventoryItemInfoList(request.CharacterId);
+                response.CharacterId = characterId;
+                response.ItemList = BuildInventoryItemInfoList(characterId);
                 response.CharacterInfo = ToCharacterInfo(character);
 
                 return BuildUseItemResponse(response);
@@ -209,12 +236,12 @@ namespace MMOServer.Services
 
                 response.ErrorCode = (int)ErrorCode.UnknownError;
                 response.Message = "使用道具失败";
-                response.CharacterId = request?.CharacterId ?? 0;
-                response.ItemList = request != null && request.CharacterId > 0
-                    ? BuildInventoryItemInfoList(request.CharacterId)
+                response.CharacterId = session?.CurrentCharacterId ?? 0;
+                response.ItemList = session != null && session.CurrentCharacterId > 0
+                    ? BuildInventoryItemInfoList(session.CurrentCharacterId)
                     : new List<InventoryItemInfo>();
-                response.CharacterInfo = request != null && request.CharacterId > 0
-                    ? BuildLatestCharacterInfoSafe(request.CharacterId)
+                response.CharacterInfo = session != null && session.CurrentCharacterId > 0
+                    ? BuildLatestCharacterInfoSafe(session.CurrentCharacterId)
                     : null;
 
                 return BuildUseItemResponse(response);
@@ -324,6 +351,39 @@ namespace MMOServer.Services
                 MessageId = (int)MessageId.UseItemResponse,
                 BodyJson = JsonHelper.ToJson(response)
             };
+        }
+
+        /// <summary>
+        /// 权威校验
+        /// </summary>
+        private bool IsSessionCharacterValid(ClientSession session, int requestCharacterId)
+        {
+            if (session == null)
+            {
+                return false;
+            }
+
+            if (session.UserId <= 0)
+            {
+                return false;
+            }
+
+            if (session.CurrentCharacterId <= 0)
+            {
+                return false;
+            }
+
+            if (requestCharacterId <= 0)
+            {
+                return false;
+            }
+
+            if (session.CurrentCharacterId != requestCharacterId)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

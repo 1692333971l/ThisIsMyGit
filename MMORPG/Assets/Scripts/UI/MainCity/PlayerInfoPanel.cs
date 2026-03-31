@@ -2,6 +2,7 @@ using Protocol;
 using TMPro;
 using UnityEngine;
 
+//玩家信息面板
 public class PlayerInfoPanel : MonoBehaviour
 {
     [SerializeField] private RectTransform _maxHp;

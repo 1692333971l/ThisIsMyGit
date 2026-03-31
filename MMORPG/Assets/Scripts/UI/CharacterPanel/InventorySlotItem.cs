@@ -14,7 +14,7 @@ public class InventorySlotItem : MonoBehaviour
     private Sprite _defaultSprite;
     private InventoryItemInfo _inventoryItemInfo;//格子信息
 
-    public event Action<InventoryItemInfo> _onClickCallback;
+    public event Action<InventoryItemInfo> OnClickCallback;
 
     private void Awake()
     {
@@ -43,6 +43,6 @@ public class InventorySlotItem : MonoBehaviour
     }
     private void OnClickInventorySlotItem()
     {
-        _onClickCallback?.Invoke(_inventoryItemInfo);
+        OnClickCallback?.Invoke(_inventoryItemInfo);
     }
 }

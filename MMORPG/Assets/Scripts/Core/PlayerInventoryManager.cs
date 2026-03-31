@@ -4,7 +4,7 @@ using System.Collections.Generic;
 //背包格子管理器
 public class PlayerInventoryManager
 {
-    private Dictionary<int, InventoryItemInfo> _playerInventoryDict = new Dictionary<int, InventoryItemInfo>();
+    private readonly Dictionary<int, InventoryItemInfo> _playerInventoryDict = new Dictionary<int, InventoryItemInfo>();
     //初始化背包数据
     public void SetPlayerInventoryDict(List<InventoryItemInfo> itemList)
     {
