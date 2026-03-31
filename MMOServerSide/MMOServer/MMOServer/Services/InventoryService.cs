@@ -11,8 +11,8 @@ namespace MMOServer.Services
         private readonly InventoryRepository _inventoryRepository;
         private readonly CharacterRepository _characterRepository;
 
-        private const int UseEffectTypeRestoreHp = 1;
-        private const int UseEffectTypeRestoreMp = 2;
+        private const int UseEffectTypeRestoreHp = 1;// 1 = 回复HP
+        private const int UseEffectTypeRestoreMp = 2;// 2 = 回复MP
 
         public InventoryService()
         {
@@ -86,6 +86,7 @@ namespace MMOServer.Services
                 response.Message = "使用道具请求参数无效";
                 response.CharacterId = 0;
                 response.ItemList = new List<InventoryItemInfo>();
+                response.CharacterInfo = null;
                 return BuildUseItemResponse(response);
             }
 
@@ -100,6 +101,7 @@ namespace MMOServer.Services
                     response.Message = "角色不存在";
                     response.CharacterId = request.CharacterId;
                     response.ItemList = new List<InventoryItemInfo>();
+                    response.CharacterInfo = null;
                     return BuildUseItemResponse(response);
                 }
 
@@ -115,6 +117,7 @@ namespace MMOServer.Services
                     response.Message = "该格子没有可使用的道具";
                     response.CharacterId = request.CharacterId;
                     response.ItemList = BuildInventoryItemInfoList(request.CharacterId);
+                    response.CharacterInfo = ToCharacterInfo(character);
                     return BuildUseItemResponse(response);
                 }
 
@@ -126,6 +129,7 @@ namespace MMOServer.Services
                     response.Message = "道具配置不存在";
                     response.CharacterId = request.CharacterId;
                     response.ItemList = BuildInventoryItemInfoList(request.CharacterId);
+                    response.CharacterInfo = ToCharacterInfo(character);
                     return BuildUseItemResponse(response);
                 }
 
@@ -136,6 +140,7 @@ namespace MMOServer.Services
                     response.Message = "该道具不可使用";
                     response.CharacterId = request.CharacterId;
                     response.ItemList = BuildInventoryItemInfoList(request.CharacterId);
+                    response.CharacterInfo = ToCharacterInfo(character);
                     return BuildUseItemResponse(response);
                 }
 
@@ -166,6 +171,7 @@ namespace MMOServer.Services
                         response.Message = "暂不支持该道具效果类型";
                         response.CharacterId = request.CharacterId;
                         response.ItemList = BuildInventoryItemInfoList(request.CharacterId);
+                        response.CharacterInfo = ToCharacterInfo(character);
                         return BuildUseItemResponse(response);
                 }
 
@@ -183,11 +189,16 @@ namespace MMOServer.Services
                     _inventoryRepository.DeleteById(inventoryItem.Id);
                 }
 
-                // 8. 返回最新背包列表
+                // 8. 重新组装最新角色信息
+                character.Hp = newHp;
+                character.Mp = newMp;
+
+                // 9. 返回最新结果
                 response.ErrorCode = (int)ErrorCode.Success;
                 response.Message = $"使用道具成功：{itemConfig.ItemName}";
                 response.CharacterId = request.CharacterId;
                 response.ItemList = BuildInventoryItemInfoList(request.CharacterId);
+                response.CharacterInfo = ToCharacterInfo(character);
 
                 return BuildUseItemResponse(response);
             }
@@ -202,6 +213,9 @@ namespace MMOServer.Services
                 response.ItemList = request != null && request.CharacterId > 0
                     ? BuildInventoryItemInfoList(request.CharacterId)
                     : new List<InventoryItemInfo>();
+                response.CharacterInfo = request != null && request.CharacterId > 0
+                    ? BuildLatestCharacterInfoSafe(request.CharacterId)
+                    : null;
 
                 return BuildUseItemResponse(response);
             }
@@ -221,6 +235,42 @@ namespace MMOServer.Services
         }
 
         /// <summary>
+        /// CharacterEntity -> CharacterInfo
+        /// </summary>
+        private CharacterInfo ToCharacterInfo(CharacterEntity character)
+        {
+            if (character == null)
+            {
+                return null;
+            }
+
+            return new CharacterInfo
+            {
+                CharacterId = character.Id,
+                UserId = character.UserId,
+                Name = character.Name,
+                Profession = character.Profession,
+                Level = character.Level,
+                Exp = character.Exp,
+                Gold = character.Gold,
+                Strength = character.Strength,
+                Agility = character.Agility,
+                Intelligence = character.Intelligence,
+                CritRate = character.CritRate,
+                CritDamage = character.CritDamage,
+                Defense = character.Defense,
+                Hp = character.Hp,
+                Mp = character.Mp,
+                MaxHp = character.MaxHp,
+                MaxMp = character.MaxMp,
+                MapId = character.MapId,
+                PosX = character.PosX,
+                PosY = character.PosY,
+                PosZ = character.PosZ
+            };
+        }
+
+        /// <summary>
         /// 获取角色最新背包列表（返回给客户端刷新UI）
         /// </summary>
         private List<InventoryItemInfo> BuildInventoryItemInfoList(int characterId)
@@ -234,6 +284,22 @@ namespace MMOServer.Services
             }
 
             return itemInfoList;
+        }
+
+        /// <summary>
+        /// 安全获取最新角色信息
+        /// </summary>
+        private CharacterInfo BuildLatestCharacterInfoSafe(int characterId)
+        {
+            try
+            {
+                CharacterEntity character = _characterRepository.GetByCharacterId(characterId);
+                return ToCharacterInfo(character);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>

@@ -15,6 +15,9 @@ namespace Protocol
         // 角色ID
         public int CharacterId;
 
+        // 使用后的角色信息
+        public CharacterInfo CharacterInfo;
+
         // 使用后的背包物品列表
         public List<InventoryItemInfo> ItemList;
     }

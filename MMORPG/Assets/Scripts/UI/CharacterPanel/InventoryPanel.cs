@@ -24,15 +24,20 @@ public class InventoryPanel : MonoBehaviour
             InventorySlotItem item = Instantiate(_inventorySlotItem, _inventoryPanelRoot);
         }
     }
-    public void OnEnable()
+    private void OnEnable()
     {
         Init();
         GameApp.Instance.InventoryService.OnUseItemResponse += HandleUseItemResponse;
+        _inventoryItemOperateMenu._onClickUseButton += OnClickUseButton;
+        _inventoryItemOperateMenu._onSellUseButton += OnClickSellButton;
     }
     private void OnDisable()
     {
         GameApp.Instance.InventoryService.OnUseItemResponse -= HandleUseItemResponse;
+        _inventoryItemOperateMenu._onClickUseButton -= OnClickUseButton;
+        _inventoryItemOperateMenu._onSellUseButton -= OnClickSellButton;
     }
+    //初始化数据
     private void Init()
     {
         Dictionary<int, InventoryItemInfo> inventoryDict = GameApp.Instance.PlayerInventoryManager.GetPlayerInventoryDict();
@@ -64,10 +69,6 @@ public class InventoryPanel : MonoBehaviour
         }
         _inventoryItemOperateMenu.gameObject.SetActive(true);
         _inventoryItemOperateMenu.Init(inventoryItemInfo);
-        _inventoryItemOperateMenu._onClickUseButton -= OnClickUseButton;
-        _inventoryItemOperateMenu._onClickUseButton += OnClickUseButton;
-        _inventoryItemOperateMenu._onSellUseButton -= OnClickSellButton;
-        _inventoryItemOperateMenu._onSellUseButton += OnClickSellButton;
     }
     //使用按钮点击事件
     private void OnClickUseButton(InventoryItemInfo inventoryItemInfo)
@@ -82,6 +83,6 @@ public class InventoryPanel : MonoBehaviour
     //出售按钮点击事件
     private void OnClickSellButton(int count, InventoryItemInfo inventoryItemInfo)
     {
-        
+        Init();
     }
 }

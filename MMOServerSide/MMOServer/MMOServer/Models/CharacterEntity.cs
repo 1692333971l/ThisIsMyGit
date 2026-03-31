@@ -17,6 +17,9 @@
         // 等级
         public int Level { get; set; }
 
+        // 经验
+        public int Exp { get; set; }
+
         // 金币
         public int Gold { get; set; }
 

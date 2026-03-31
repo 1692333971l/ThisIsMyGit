@@ -46,6 +46,7 @@ public class InventoryService
     {
         UseItemResponse response = JsonUtility.FromJson<UseItemResponse>(message.BodyJson);
         GameApp.Instance.PlayerInventoryManager.SetPlayerInventoryDict(response.ItemList);
+        GameApp.Instance.PlayerCharacterManager.SetCharacterInfo(response.CharacterInfo);
         OnUseItemResponse?.Invoke(response);
     }
 }

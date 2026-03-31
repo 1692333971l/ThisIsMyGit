@@ -22,6 +22,9 @@ public class MainCityEntryController : MonoBehaviour
     // 角色呼出面板
     [SerializeField] private Image _characterPanel;
 
+    // 角色信息UI
+    [SerializeField] private PlayerInfoPanel _playerInfoPanel;
+
     /// <summary>
     /// Unity 生命周期：OnEnable
     /// 
@@ -122,6 +125,9 @@ public class MainCityEntryController : MonoBehaviour
         // 把服务端返回的“当前玩家角色信息”保存到本地玩家角色管理器中
         // 后续本地玩家生成、网络同步、UI等都会用到
         GameApp.Instance.PlayerCharacterManager.SetCharacterInfo(response.CharacterInfo);
+
+        // 初始化本地玩家UI
+        _playerInfoPanel.Init();
 
         // 生成本地玩家对象
         GameObject playerObject = GameApp.Instance.PlayerSpawnManager.SpawnCurrentPlayer();

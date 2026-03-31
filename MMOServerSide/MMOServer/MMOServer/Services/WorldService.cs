@@ -135,18 +135,26 @@ namespace MMOServer.Services
                 // 返回当前玩家自己的角色信息
                 response.CharacterInfo = new CharacterInfo
                 {
-                    CharacterId = entity.Id,
-                    UserId = entity.UserId,
-                    Name = entity.Name,
-                    Profession = entity.Profession,
-                    Level = entity.Level,
-                    Gold = entity.Gold,
-                    Hp = entity.Hp,
-                    Mp = entity.Mp,
+                    CharacterId  = entity.Id,
+                    UserId       = entity.UserId,
+                    Name         = entity.Name,
+                    Profession   = entity.Profession,
+                    Level        = entity.Level,
+                    Exp          = entity.Exp,
+                    Gold         = entity.Gold,
+                    Strength     = entity.Strength,
+                    Agility      = entity.Agility,
+                    Intelligence = entity.Intelligence,
+                    CritRate     = entity.CritRate,
+                    CritDamage   = entity.CritDamage,
+                    Hp    = entity.Hp,
+                    MaxHp = entity.MaxHp,
+                    Mp    = entity.Mp,
+                    MaxMp = entity.MaxMp,
                     MapId = entity.MapId,
-                    PosX = entity.PosX,
-                    PosY = entity.PosY,
-                    PosZ = entity.PosZ
+                    PosX  = entity.PosX,
+                    PosY  = entity.PosY,
+                    PosZ  = entity.PosZ
                 };
 
                 // 把其他在线玩家列表转换成可传输的协议对象列表
