@@ -42,6 +42,9 @@ public class ClientMessageDispatcher
             case MessageId.UseItemResponse://使用道具响应
                 GameApp.Instance.InventoryService.HandleUseItemResponse(message);
                 break;
+            case MessageId.SellItemResponse://出售道具响应
+                GameApp.Instance.InventoryService.HandleSellItemResponse(message);
+                break;
             default:
                 Debug.LogWarning($"ClientMessageDispatcher: unknown message id = {message.MessageId}");
                 break;

@@ -36,5 +36,8 @@ namespace Protocol
         // 使用道具
         UseItemRequest = 1017,
         UseItemResponse = 1018,
+        // 出售道具
+        SellItemRequest = 1019,
+        SellItemResponse = 1020,
     }
 }

@@ -40,6 +40,10 @@ namespace MMOServer.Network
 
                 case MessageId.UseItemRequest:
                     return GameServer.Instance.InventoryService.HandleUseItem(requestMessage, session);
+
+                case MessageId.SellItemRequest:
+                    return GameServer.Instance.InventoryService.HandleSellItem(requestMessage, session);
+
                 default:
                     Logger.Warn($"Unknown message id: {requestMessage.MessageId}");
                     return null;

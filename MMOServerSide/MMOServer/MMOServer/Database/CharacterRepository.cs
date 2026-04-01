@@ -220,13 +220,13 @@ namespace MMOServer.Database
                 conn.Open();
 
                 string sql = @"
-            UPDATE dbo.Characters
-            SET
-                MapId = @MapId,
-                PosX  = @PosX,
-                PosY  = @PosY,
-                PosZ  = @PosZ
-            WHERE Id = @CharacterId";
+                    UPDATE dbo.Characters
+                    SET
+                        MapId = @MapId,
+                        PosX  = @PosX,
+                        PosY  = @PosY,
+                        PosZ  = @PosZ
+                    WHERE Id = @CharacterId";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
@@ -250,14 +250,14 @@ namespace MMOServer.Database
                 conn.Open();
 
                 string sql = @"
-            SELECT 
-                Id, UserId, Name, Profession, Level, Gold,
-                Strength, Agility, Intelligence,
-                CritRate, CritDamage, Defense,
-                Hp, Mp, MaxHp, MaxMp,
-                MapId, PosX, PosY, PosZ
-            FROM dbo.Characters
-            WHERE Id = @CharacterId";
+                    SELECT 
+                        Id, UserId, Name, Profession, Level, Gold,
+                        Strength, Agility, Intelligence,
+                        CritRate, CritDamage, Defense,
+                        Hp, Mp, MaxHp, MaxMp,
+                        MapId, PosX, PosY, PosZ
+                    FROM dbo.Characters
+                    WHERE Id = @CharacterId";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
@@ -311,17 +311,40 @@ namespace MMOServer.Database
                 conn.Open();
 
                 string sql = @"
-            UPDATE dbo.Characters
-            SET
-                Hp = @Hp,
-                Mp = @Mp
-            WHERE Id = @CharacterId";
+                    UPDATE dbo.Characters
+                    SET
+                        Hp = @Hp,
+                        Mp = @Mp
+                    WHERE Id = @CharacterId";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@CharacterId", characterId);
                     cmd.Parameters.AddWithValue("@Hp", hp);
                     cmd.Parameters.AddWithValue("@Mp", mp);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+        /// <summary>
+        /// 更新角色金币
+        /// </summary>
+        public void UpdateCharacterGold(int characterId, int gold)
+        {
+
+            using (SqlConnection conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+
+                string sql = @"
+                    UPDATE Characters
+                    SET Gold = @Gold
+                    WHERE Id = @CharacterId";
+
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Gold", gold);
+                    cmd.Parameters.AddWithValue("@CharacterId", characterId);
                     cmd.ExecuteNonQuery();
                 }
             }

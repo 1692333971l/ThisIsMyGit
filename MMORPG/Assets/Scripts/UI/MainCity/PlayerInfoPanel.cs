@@ -15,20 +15,25 @@ public class PlayerInfoPanel : MonoBehaviour
 
     private void Start()
     {
-        Init();
+        Init(GameApp.Instance.PlayerCharacterManager.GetCharacterInfo());
         GameApp.Instance.InventoryService.OnUseItemResponse += HandleUseItemResponse;
+        GameApp.Instance.InventoryService.OnSellItemResponse += HandlSellItemResponse;
     }
     private void OnDestroy()
     {
         GameApp.Instance.InventoryService.OnUseItemResponse -= HandleUseItemResponse;
+        GameApp.Instance.InventoryService.OnSellItemResponse -= HandlSellItemResponse;
     }
     private void HandleUseItemResponse(UseItemResponse response)
     {
-        Init();
+        Init(response.CharacterInfo);
     }
-    public void Init()
+    private void HandlSellItemResponse(SellItemResponse response)
     {
-        Protocol.CharacterInfo characterInfo = GameApp.Instance.PlayerCharacterManager.GetCharacterInfo();
+        Init(response.CharacterInfo);
+    }
+    public void Init(Protocol.CharacterInfo characterInfo)
+    {
         _maxHp.sizeDelta = new Vector2(characterInfo.MaxHp * 2, _maxHp.sizeDelta.y);
         _hp.sizeDelta = new Vector2(characterInfo.Hp * 2, _hp.sizeDelta.y);
         _maxMp.sizeDelta = new Vector2(characterInfo.MaxMp * 2, _maxMp.sizeDelta.y);

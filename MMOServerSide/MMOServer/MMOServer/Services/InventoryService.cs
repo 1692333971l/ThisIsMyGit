@@ -30,22 +30,10 @@ namespace MMOServer.Services
 
             GetInventoryResponse response = new GetInventoryResponse();
 
-            if (request == null || request.CharacterId <= 0)
+            if (!IsSessionValid(session))
             {
                 response.ErrorCode = (int)ErrorCode.InvalidParams;
-                response.Message = "背包请求参数无效";
-                response.CharacterId = 0;
-                response.ItemList = new List<InventoryItemInfo>();
-                return BuildGetInventoryResponse(response);
-            }
-
-            // session 与角色归属校验
-            if (!IsSessionCharacterValid(session, request.CharacterId))
-            {
-                Logger.Warn($"HandleGetInventory rejected: SessionCharacterId={session?.CurrentCharacterId}, RequestCharacterId={request.CharacterId}, UserId={session?.UserId}");
-
-                response.ErrorCode = (int)ErrorCode.InvalidParams;
-                response.Message = "角色身份校验失败，禁止访问其他角色背包";
+                response.Message = "会话无效，无法获取背包";
                 response.CharacterId = 0;
                 response.ItemList = new List<InventoryItemInfo>();
                 return BuildGetInventoryResponse(response);
@@ -53,7 +41,9 @@ namespace MMOServer.Services
 
             try
             {
-                List<InventoryItemEntity> entityList = _inventoryRepository.GetInventoryListByCharacterId(session.CurrentCharacterId);
+                int characterId = session.CurrentCharacterId;
+
+                List<InventoryItemEntity> entityList = _inventoryRepository.GetInventoryListByCharacterId(characterId);
 
                 List<InventoryItemInfo> itemInfoList = new List<InventoryItemInfo>();
 
@@ -64,19 +54,19 @@ namespace MMOServer.Services
 
                 response.ErrorCode = (int)ErrorCode.Success;
                 response.Message = "获取背包成功";
-                response.CharacterId = session.CurrentCharacterId;
+                response.CharacterId = characterId;
                 response.ItemList = itemInfoList;
 
                 return BuildGetInventoryResponse(response);
             }
             catch (Exception ex)
             {
-                Logger.Error($"HandleGetInventory failed: CharacterId={request.CharacterId}, Error={ex.Message}");
+                Logger.Error($"HandleGetInventory failed: SessionCharacterId={session?.CurrentCharacterId}, Error={ex.Message}");
                 Logger.Error(ex.ToString());
 
                 response.ErrorCode = (int)ErrorCode.UnknownError;
                 response.Message = "获取背包失败";
-                response.CharacterId = request.CharacterId;
+                response.CharacterId = session?.CurrentCharacterId ?? 0;
                 response.ItemList = new List<InventoryItemInfo>();
 
                 return BuildGetInventoryResponse(response);
@@ -92,7 +82,7 @@ namespace MMOServer.Services
 
             UseItemResponse response = new UseItemResponse();
 
-            if (request == null || request.CharacterId <= 0 || request.SlotIndex < 0)
+            if (request == null || request.SlotIndex < 0)
             {
                 response.ErrorCode = (int)ErrorCode.InvalidParams;
                 response.Message = "使用道具请求参数无效";
@@ -102,13 +92,10 @@ namespace MMOServer.Services
                 return BuildUseItemResponse(response);
             }
 
-            // 新增：session 与角色归属校验
-            if (!IsSessionCharacterValid(session, request.CharacterId))
+            if (!IsSessionValid(session))
             {
-                Logger.Warn($"HandleUseItem rejected: SessionCharacterId={session?.CurrentCharacterId}, RequestCharacterId={request.CharacterId}, SlotIndex={request.SlotIndex}, UserId={session?.UserId}");
-
                 response.ErrorCode = (int)ErrorCode.InvalidParams;
-                response.Message = "角色身份校验失败，禁止操作其他角色背包";
+                response.Message = "会话无效，无法使用道具";
                 response.CharacterId = 0;
                 response.ItemList = new List<InventoryItemInfo>();
                 response.CharacterInfo = null;
@@ -220,18 +207,21 @@ namespace MMOServer.Services
                 character.Hp = newHp;
                 character.Mp = newMp;
 
-                // 9. 返回最新结果
+                // 9. 规范化背包（去空洞，后续也可在这里扩展自动堆叠）
+                List<InventoryItemInfo> normalizedItemList = NormalizeInventory(characterId);
+
+                // 10. 返回最新结果
                 response.ErrorCode = (int)ErrorCode.Success;
                 response.Message = $"使用道具成功：{itemConfig.ItemName}";
                 response.CharacterId = characterId;
-                response.ItemList = BuildInventoryItemInfoList(characterId);
+                response.ItemList = normalizedItemList;
                 response.CharacterInfo = ToCharacterInfo(character);
 
                 return BuildUseItemResponse(response);
             }
             catch (Exception ex)
             {
-                Logger.Error($"HandleUseItem failed: CharacterId={request?.CharacterId}, SlotIndex={request?.SlotIndex}, Error={ex.Message}");
+                Logger.Error($"HandleUseItem failed: CharacterId={session?.CurrentCharacterId}, SlotIndex={request?.SlotIndex}, Error={ex.Message}");
                 Logger.Error(ex.ToString());
 
                 response.ErrorCode = (int)ErrorCode.UnknownError;
@@ -246,6 +236,192 @@ namespace MMOServer.Services
 
                 return BuildUseItemResponse(response);
             }
+        }
+
+        /// <summary>
+        /// 处理出售道具请求
+        /// </summary>
+        public NetMessage HandleSellItem(NetMessage requestMessage, ClientSession session)
+        {
+            SellItemRequest request = JsonHelper.FromJson<SellItemRequest>(requestMessage.BodyJson);
+
+            SellItemResponse response = new SellItemResponse();
+
+            // 1. 基础参数校验
+            if (request == null || request.SlotIndex < 0 || request.Quantity <= 0)
+            {
+                response.ErrorCode = (int)ErrorCode.InvalidParams;
+                response.Message = "出售道具请求参数无效";
+                response.CharacterId = 0;
+                response.ItemList = new List<InventoryItemInfo>();
+                response.CharacterInfo = null;
+                return BuildSellItemResponse(response);
+            }
+
+            // 2. session 校验
+            if (!IsSessionValid(session))
+            {
+                response.ErrorCode = (int)ErrorCode.InvalidParams;
+                response.Message = "会话无效，无法出售道具";
+                response.CharacterId = 0;
+                response.ItemList = new List<InventoryItemInfo>();
+                response.CharacterInfo = null;
+                return BuildSellItemResponse(response);
+            }
+
+            try
+            {
+                int characterId = session.CurrentCharacterId;
+
+                // 3. 查角色
+                CharacterEntity character = _characterRepository.GetByCharacterId(characterId);
+                if (character == null)
+                {
+                    response.ErrorCode = (int)ErrorCode.UnknownError;
+                    response.Message = "角色不存在";
+                    response.CharacterId = characterId;
+                    response.ItemList = new List<InventoryItemInfo>();
+                    response.CharacterInfo = null;
+                    return BuildSellItemResponse(response);
+                }
+
+                // 4. 查背包格子物品
+                InventoryItemEntity inventoryItem = _inventoryRepository.GetByCharacterIdAndSlotIndex(
+                    characterId,
+                    request.SlotIndex
+                );
+
+                if (inventoryItem == null)
+                {
+                    response.ErrorCode = (int)ErrorCode.UnknownError;
+                    response.Message = "该格子没有可出售的道具";
+                    response.CharacterId = characterId;
+                    response.ItemList = BuildInventoryItemInfoList(characterId);
+                    response.CharacterInfo = ToCharacterInfo(character);
+                    return BuildSellItemResponse(response);
+                }
+
+                // 5. 校验出售数量
+                if (request.Quantity > inventoryItem.Count)
+                {
+                    response.ErrorCode = (int)ErrorCode.InvalidParams;
+                    response.Message = "出售数量超过背包中实际数量";
+                    response.CharacterId = characterId;
+                    response.ItemList = BuildInventoryItemInfoList(characterId);
+                    response.CharacterInfo = ToCharacterInfo(character);
+                    return BuildSellItemResponse(response);
+                }
+
+                // 6. 查道具配置
+                ItemConfig itemConfig = GameServer.Instance.ItemConfigManager.GetById(inventoryItem.ItemId);
+                if (itemConfig == null)
+                {
+                    response.ErrorCode = (int)ErrorCode.UnknownError;
+                    response.Message = "道具配置不存在";
+                    response.CharacterId = characterId;
+                    response.ItemList = BuildInventoryItemInfoList(characterId);
+                    response.CharacterInfo = ToCharacterInfo(character);
+                    return BuildSellItemResponse(response);
+                }
+
+                // 7. 校验是否可出售
+                // 这里先按 SellPrice <= 0 视为不可出售
+                if (itemConfig.SellPrice <= 0)
+                {
+                    response.ErrorCode = (int)ErrorCode.UnknownError;
+                    response.Message = "该道具不可出售";
+                    response.CharacterId = characterId;
+                    response.ItemList = BuildInventoryItemInfoList(characterId);
+                    response.CharacterInfo = ToCharacterInfo(character);
+                    return BuildSellItemResponse(response);
+                }
+
+                // 8. 计算本次出售获得金币
+                int addGold = itemConfig.SellPrice * request.Quantity;
+                int newGold = character.Gold + addGold;
+
+                // 9. 更新角色金币
+                _characterRepository.UpdateCharacterGold(characterId, newGold);
+
+                // 10. 扣减背包数量
+                int leftCount = inventoryItem.Count - request.Quantity;
+                if (leftCount > 0)
+                {
+                    _inventoryRepository.UpdateItemCount(inventoryItem.Id, leftCount);
+                }
+                else
+                {
+                    _inventoryRepository.DeleteById(inventoryItem.Id);
+                }
+
+                // 11. 回写最新角色状态
+                character.Gold = newGold;
+
+                // 12. 规范化背包（去空洞，后续也可扩展自动堆叠）
+                List<InventoryItemInfo> normalizedItemList = NormalizeInventory(characterId);
+
+                // 13. 返回最新结果
+                response.ErrorCode = (int)ErrorCode.Success;
+                response.Message = $"出售道具成功：{itemConfig.ItemName} x{request.Quantity}，获得金币 {addGold}";
+                response.CharacterId = characterId;
+                response.ItemList = normalizedItemList;
+                response.CharacterInfo = ToCharacterInfo(character);
+
+                return BuildSellItemResponse(response);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"HandleSellItem failed: SlotIndex={request?.SlotIndex}, Quantity={request?.Quantity}, SessionCharacterId={session?.CurrentCharacterId}, Error={ex.Message}");
+                Logger.Error(ex.ToString());
+
+                response.ErrorCode = (int)ErrorCode.UnknownError;
+                response.Message = "出售道具失败";
+                response.CharacterId = session?.CurrentCharacterId ?? 0;
+                response.ItemList = session != null && session.CurrentCharacterId > 0
+                    ? BuildInventoryItemInfoList(session.CurrentCharacterId)
+                    : new List<InventoryItemInfo>();
+                response.CharacterInfo = session != null && session.CurrentCharacterId > 0
+                    ? BuildLatestCharacterInfoSafe(session.CurrentCharacterId)
+                    : null;
+
+                return BuildSellItemResponse(response);
+            }
+        }
+        /// <summary>
+        /// 规范化当前角色背包
+        /// 1. 去掉空洞
+        /// 2. 按原格子顺序重新连续分配 SlotIndex
+        /// 
+        /// </summary>
+        private List<InventoryItemInfo> NormalizeInventory(int characterId)
+        {
+            // 1. 读取当前角色全部背包物品
+            List<InventoryItemEntity> itemList = _inventoryRepository.GetInventoryListByCharacterId(characterId);
+
+            if (itemList == null || itemList.Count == 0)
+            {
+                return new List<InventoryItemInfo>();
+            }
+
+            // 2. 先按原格子索引从小到大排序
+            List<InventoryItemEntity> orderedList = itemList
+                .OrderBy(item => item.SlotIndex)
+                .ToList();
+
+            // 3. 重新从 0 开始连续分配格子
+            for (int i = 0; i < orderedList.Count; i++)
+            {
+                InventoryItemEntity item = orderedList[i];
+
+                if (item.SlotIndex != i)
+                {
+                    _inventoryRepository.UpdateItemSlotIndex(item.Id, i);
+                    item.SlotIndex = i;
+                }
+            }
+
+            // 4. 返回整理后的最新协议数据
+            return orderedList.Select(ToInventoryItemInfo).ToList();
         }
 
         /// <summary>
@@ -354,9 +530,20 @@ namespace MMOServer.Services
         }
 
         /// <summary>
-        /// 权威校验
+        /// 构建出售道具响应消息
         /// </summary>
-        private bool IsSessionCharacterValid(ClientSession session, int requestCharacterId)
+        private NetMessage BuildSellItemResponse(SellItemResponse response)
+        {
+            return new NetMessage
+            {
+                MessageId = (int)MessageId.SellItemResponse,
+                BodyJson = JsonHelper.ToJson(response)
+            };
+        }
+        /// <summary>
+        /// 校验是否有效会话（是否已登录，是否选了角色）
+        /// </summary>
+        private bool IsSessionValid(ClientSession session)
         {
             if (session == null)
             {
@@ -369,16 +556,6 @@ namespace MMOServer.Services
             }
 
             if (session.CurrentCharacterId <= 0)
-            {
-                return false;
-            }
-
-            if (requestCharacterId <= 0)
-            {
-                return false;
-            }
-
-            if (session.CurrentCharacterId != requestCharacterId)
             {
                 return false;
             }

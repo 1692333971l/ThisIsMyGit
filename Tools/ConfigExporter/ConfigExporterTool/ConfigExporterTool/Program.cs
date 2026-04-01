@@ -1,4 +1,5 @@
 ﻿using ConfigExporter.Services;
+using ConfigExporter.Services.Core;
 
 namespace ConfigExporter
 {
@@ -8,66 +9,10 @@ namespace ConfigExporter
         {
             try
             {
-                // 项目根目录推导
-                string currentDir = AppDomain.CurrentDomain.BaseDirectory;
-                string toolProjectDir = Path.GetFullPath(Path.Combine(currentDir, "..", "..", "..", ".."));
-                string repoRootDir = Path.GetFullPath(Path.Combine(toolProjectDir, "..", "..", ".."));
+                string repoRootDir = ExportPathHelper.GetRepoRoot();
 
-                // ---------------------------
-                // Profession.xlsx
-                // ---------------------------
-                string professionExcelPath = Path.Combine(repoRootDir, "ConfigExcels", "Profession.xlsx");
-
-                string professionClientOutputPath = Path.Combine(
-                    repoRootDir,
-                    "MMORPG",
-                    "Assets",
-                    "Resources",
-                    "Config",
-                    "Generated",
-                    "ProfessionConfig.json"
-                );
-
-                string professionServerOutputPath = Path.Combine(
-                    repoRootDir,
-                    "MMOServerSide",
-                    "MMOServer",
-                    "MMOServer",
-                    "Config",
-                    "Generated",
-                    "ProfessionConfig.json"
-                );
-
-                ProfessionExporter professionExporter = new ProfessionExporter();
-                professionExporter.Export(professionExcelPath, professionClientOutputPath, professionServerOutputPath);
-
-                // ---------------------------
-                // Item.xlsx
-                // ---------------------------
-                string itemExcelPath = Path.Combine(repoRootDir, "ConfigExcels", "Item.xlsx");
-
-                string itemClientOutputPath = Path.Combine(
-                    repoRootDir,
-                    "MMORPG",
-                    "Assets",
-                    "Resources",
-                    "Config",
-                    "Generated",
-                    "ItemConfig.json"
-                );
-
-                string itemServerOutputPath = Path.Combine(
-                    repoRootDir,
-                    "MMOServerSide",
-                    "MMOServer",
-                    "MMOServer",
-                    "Config",
-                    "Generated",
-                    "ItemConfig.json"
-                );
-
-                ItemExporter itemExporter = new ItemExporter();
-                itemExporter.Export(itemExcelPath, itemClientOutputPath, itemServerOutputPath);
+                ExportProfession(repoRootDir);
+                ExportItem(repoRootDir);
 
                 Console.WriteLine("全部导出完成。");
             }
@@ -79,6 +24,26 @@ namespace ConfigExporter
 
             Console.WriteLine("按任意键退出...");
             Console.ReadKey();
+        }
+
+        private static void ExportProfession(string repoRootDir)
+        {
+            string excelPath = ExportPathHelper.GetExcelPath(repoRootDir, "Profession.xlsx");
+            string clientPath = ExportPathHelper.GetClientOutputPath(repoRootDir, "ProfessionConfig.json");
+            string serverPath = ExportPathHelper.GetServerOutputPath(repoRootDir, "ProfessionConfig.json");
+
+            ProfessionExporter exporter = new ProfessionExporter();
+            exporter.Export(excelPath, clientPath, serverPath);
+        }
+
+        private static void ExportItem(string repoRootDir)
+        {
+            string excelPath = ExportPathHelper.GetExcelPath(repoRootDir, "Item.xlsx");
+            string clientPath = ExportPathHelper.GetClientOutputPath(repoRootDir, "ItemConfig.json");
+            string serverPath = ExportPathHelper.GetServerOutputPath(repoRootDir, "ItemConfig.json");
+
+            ItemExporter exporter = new ItemExporter();
+            exporter.Export(excelPath, clientPath, serverPath);
         }
     }
 }

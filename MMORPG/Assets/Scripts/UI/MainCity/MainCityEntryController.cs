@@ -127,7 +127,7 @@ public class MainCityEntryController : MonoBehaviour
         GameApp.Instance.PlayerCharacterManager.SetCharacterInfo(response.CharacterInfo);
 
         // 初始化本地玩家UI
-        _playerInfoPanel.Init();
+        _playerInfoPanel.Init(response.CharacterInfo);
 
         // 生成本地玩家对象
         GameObject playerObject = GameApp.Instance.PlayerSpawnManager.SpawnCurrentPlayer();

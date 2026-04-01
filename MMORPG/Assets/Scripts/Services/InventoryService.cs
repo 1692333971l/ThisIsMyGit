@@ -5,15 +5,13 @@ using UnityEngine;
 //背包业务层
 public class InventoryService
 {
-    public event Action OnGetInventoryResponse;//获取背包响应事件
+    public event Action<GetInventoryResponse> OnGetInventoryResponse;//获取背包响应事件
     public event Action<UseItemResponse> OnUseItemResponse;//使用物品响应事件
+    public event Action<SellItemResponse> OnSellItemResponse;//出售物品响应事件
     //获取背包请求
     public void SendGetInventoryRequest()
     {
-        GetInventoryRequest getInventoryRequest = new GetInventoryRequest() 
-        { 
-            CharacterId = GameApp.Instance.PlayerCharacterManager.GetCharacterInfo().CharacterId
-        };
+        GetInventoryRequest getInventoryRequest = new GetInventoryRequest();
         NetMessage message = new NetMessage()
         {
             MessageId = (int)MessageId.GetInventoryRequest,
@@ -25,19 +23,14 @@ public class InventoryService
     public void HandleGetInventoryResponse(NetMessage message)
     {
         GetInventoryResponse response = JsonUtility.FromJson<GetInventoryResponse>(message.BodyJson);
-        if ((ErrorCode)response.ErrorCode != ErrorCode.Success)
-        {
-            MessageHintWindowManger.Instance.ShowMessage("获取背包失败，错误码：" + response.ErrorCode);
-        }
         GameApp.Instance.PlayerInventoryManager.SetPlayerInventoryDict(response.ItemList);
-        OnGetInventoryResponse?.Invoke();
+        OnGetInventoryResponse?.Invoke(response);
     }
     //使用物品请求
     public void SendUseItemRequest(int slotIndex)
     {
         UseItemRequest useItemRequest = new UseItemRequest()
         {
-            CharacterId = GameApp.Instance.PlayerCharacterManager.GetCharacterInfo().CharacterId,
             SlotIndex = slotIndex
         };
         NetMessage message = new NetMessage()
@@ -51,13 +44,31 @@ public class InventoryService
     public void HandleUseItemResponse(NetMessage message)
     {
         UseItemResponse response = JsonUtility.FromJson<UseItemResponse>(message.BodyJson);
-        if ((ErrorCode)response.ErrorCode != ErrorCode.Success)
-        {
-            MessageHintWindowManger.Instance.ShowMessage("使用物品失败，错误码：" + response.ErrorCode);
-        }
         GameApp.Instance.PlayerInventoryManager.SetPlayerInventoryDict(response.ItemList);
         GameApp.Instance.PlayerCharacterManager.SetCharacterInfo(response.CharacterInfo);
         OnUseItemResponse?.Invoke(response);
-        OnGetInventoryResponse?.Invoke();
+    }
+    //出售物品请求
+    public void SendSellItemRequest(int quantity, int slotIndex)
+    {
+        SellItemRequest sellItemRequest = new SellItemRequest()
+        {
+            SlotIndex = slotIndex,
+            Quantity = quantity
+        };
+        NetMessage message = new NetMessage()
+        {
+            MessageId = (int)MessageId.SellItemRequest,
+            BodyJson = JsonUtility.ToJson(sellItemRequest)
+        };
+        GameApp.Instance.NetClient.SendMessage(message);
+    }
+    //出售物品响应
+     public void HandleSellItemResponse(NetMessage message)
+    {
+        SellItemResponse response = JsonUtility.FromJson<SellItemResponse>(message.BodyJson);
+        GameApp.Instance.PlayerInventoryManager.SetPlayerInventoryDict(response.ItemList);
+        GameApp.Instance.PlayerCharacterManager.SetCharacterInfo(response.CharacterInfo);
+        OnSellItemResponse?.Invoke(response);
     }
 }

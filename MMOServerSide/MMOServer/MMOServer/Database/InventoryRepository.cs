@@ -142,5 +142,25 @@ namespace MMOServer.Database
                 }
             }
         }
+        /// <summary>
+        /// 更新背包物品所在格子索引
+        /// </summary>
+        public void UpdateItemSlotIndex(int inventoryItemId, int slotIndex)
+        {
+            using (SqlConnection conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+
+                string sql = @"
+                UPDATE InventoryItems
+                SET SlotIndex = @SlotIndex
+                WHERE Id = @Id";
+
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@SlotIndex", slotIndex);
+                cmd.Parameters.AddWithValue("@Id", inventoryItemId);
+                cmd.ExecuteNonQuery();
+            }
+        }
     }
 }

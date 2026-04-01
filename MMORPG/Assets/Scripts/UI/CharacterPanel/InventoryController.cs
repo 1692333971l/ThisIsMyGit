@@ -11,6 +11,8 @@ public class InventoryController : MonoBehaviour
     {
         GameApp.Instance.InventoryService.OnGetInventoryResponse += HandleGetInventoryResponse;
         GameApp.Instance.InventoryService.OnUseItemResponse += HandleUseItemResponse;
+        GameApp.Instance.InventoryService.OnSellItemResponse += HandlSellItemResponse;
+
         _inventoryItemOperateMenu.OnUseClicked += OnClickUseButton;
         _inventoryItemOperateMenu.OnSellClicked += OnClickSellButton;
     }
@@ -18,12 +20,18 @@ public class InventoryController : MonoBehaviour
     {
         GameApp.Instance.InventoryService.OnGetInventoryResponse -= HandleGetInventoryResponse;
         GameApp.Instance.InventoryService.OnUseItemResponse -= HandleUseItemResponse;
+        GameApp.Instance.InventoryService.OnSellItemResponse -= HandlSellItemResponse;
+
         _inventoryItemOperateMenu.OnUseClicked -= OnClickUseButton;
         _inventoryItemOperateMenu.OnSellClicked -= OnClickSellButton;
     }
     //获取背包响应事件
-    private void HandleGetInventoryResponse()
+    private void HandleGetInventoryResponse(GetInventoryResponse getInventoryResponse)
     {
+        if ((ErrorCode)getInventoryResponse.ErrorCode != ErrorCode.Success)
+        {
+            MessageHintWindowManger.Instance.ShowMessage("获取背包失败，错误码：" + getInventoryResponse.ErrorCode);
+        }
         _inventoryPanel.Init();
     }
     //使用按钮点击事件
@@ -34,16 +42,24 @@ public class InventoryController : MonoBehaviour
     //使用物品响应事件
     private void HandleUseItemResponse(UseItemResponse useItemResponse)
     {
+        if ((ErrorCode)useItemResponse.ErrorCode != ErrorCode.Success)
+        {
+            MessageHintWindowManger.Instance.ShowMessage("使用物品失败，错误码：" + useItemResponse.ErrorCode);
+        }
         _inventoryPanel.Init();
     }
     //出售按钮点击事件
-    private void OnClickSellButton(int count, InventoryItemInfo inventoryItemInfo)
+    private void OnClickSellButton(int quantity, InventoryItemInfo inventoryItemInfo)
     {
-
+        GameApp.Instance.InventoryService.SendSellItemRequest(quantity, inventoryItemInfo.SlotIndex);
     }
     //出售物品响应事件
-    private void HandlSellItemResponse(UseItemResponse useItemResponse)
+    private void HandlSellItemResponse(SellItemResponse sellItemResponse)
     {
+        if ((ErrorCode)sellItemResponse.ErrorCode != ErrorCode.Success)
+        {
+            MessageHintWindowManger.Instance.ShowMessage("出售物品失败，错误码：" + sellItemResponse.ErrorCode);
+        }
         _inventoryPanel.Init();
     }
 }
