@@ -27,6 +27,8 @@ public class PlayerMovementController : MonoBehaviour
     {
         if (!_canMove)
         {
+            _animator.SetBool("Walk", false);
+            _animator.SetBool("Run", false);
             return;
         }
 

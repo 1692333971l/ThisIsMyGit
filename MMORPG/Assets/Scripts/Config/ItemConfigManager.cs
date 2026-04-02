@@ -18,9 +18,9 @@ public class ItemConfigManager
             return;
         }
 
-        ItemConfig[] configs = JsonArrayHelper.FromJson<ItemConfig>(textAsset.text);
+        List<ItemConfig> configs = JsonArrayHelper.FromJsonArray<ItemConfig>(textAsset.text);
 
-        if (configs == null || configs.Length == 0)
+        if (configs == null || configs.Count == 0)
         {
             Debug.LogWarning("道具配置为空。");
             return;

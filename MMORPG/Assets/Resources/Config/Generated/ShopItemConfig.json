@@ -1,0 +1,26 @@
+[
+  {
+    "ShopId": 1,
+    "ItemId": 1001,
+    "Price": 25,
+    "IsLimited": 0,
+    "LimitCount": 0,
+    "Sort": 1
+  },
+  {
+    "ShopId": 1,
+    "ItemId": 1002,
+    "Price": 25,
+    "IsLimited": 0,
+    "LimitCount": 0,
+    "Sort": 2
+  },
+  {
+    "ShopId": 1,
+    "ItemId": 2001,
+    "Price": 8,
+    "IsLimited": 0,
+    "LimitCount": 0,
+    "Sort": 3
+  }
+]

@@ -143,6 +143,24 @@ namespace MMOServer.Database
             }
         }
         /// <summary>
+        /// 删除莫格个角色的所有背包物品记录
+        /// </summary>
+        public void DeleteAllByCharacterId(int characterId)
+        {
+            using (SqlConnection conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+
+                string sql = @"
+                DELETE FROM InventoryItems
+                WHERE CharacterId = @CharacterId";
+
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@CharacterId", characterId);
+                cmd.ExecuteNonQuery();
+            }
+        }
+        /// <summary>
         /// 更新背包物品所在格子索引
         /// </summary>
         public void UpdateItemSlotIndex(int inventoryItemId, int slotIndex)
@@ -159,6 +177,24 @@ namespace MMOServer.Database
                 using SqlCommand cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@SlotIndex", slotIndex);
                 cmd.Parameters.AddWithValue("@Id", inventoryItemId);
+                cmd.ExecuteNonQuery();
+            }
+        }
+        public void Insert(InventoryItemEntity entity)
+        {
+            using (SqlConnection conn = DbHelper.GetConnection())
+            {
+                conn.Open();
+
+                string sql = @"
+                    INSERT INTO InventoryItems (CharacterId, SlotIndex, ItemId, Count)
+                    VALUES (@CharacterId, @SlotIndex, @ItemId, @Count)";
+
+                using SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@CharacterId", entity.CharacterId);
+                cmd.Parameters.AddWithValue("@SlotIndex", entity.SlotIndex);
+                cmd.Parameters.AddWithValue("@ItemId", entity.ItemId);
+                cmd.Parameters.AddWithValue("@Count", entity.Count);
                 cmd.ExecuteNonQuery();
             }
         }

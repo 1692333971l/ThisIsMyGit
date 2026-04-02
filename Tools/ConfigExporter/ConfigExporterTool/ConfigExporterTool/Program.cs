@@ -13,6 +13,8 @@ namespace ConfigExporter
 
                 ExportProfession(repoRootDir);
                 ExportItem(repoRootDir);
+                ExportNpc(repoRootDir);
+                ExportShopItem(repoRootDir);
 
                 Console.WriteLine("全部导出完成。");
             }
@@ -43,6 +45,24 @@ namespace ConfigExporter
             string serverPath = ExportPathHelper.GetServerOutputPath(repoRootDir, "ItemConfig.json");
 
             ItemExporter exporter = new ItemExporter();
+            exporter.Export(excelPath, clientPath, serverPath);
+        }
+        private static void ExportNpc(string repoRootDir)
+        {
+            string excelPath = ExportPathHelper.GetExcelPath(repoRootDir, "Npc.xlsx");
+            string clientPath = ExportPathHelper.GetClientOutputPath(repoRootDir, "NpcConfig.json");
+            string serverPath = ExportPathHelper.GetServerOutputPath(repoRootDir, "NpcConfig.json");
+
+            NpcExporter exporter = new NpcExporter();
+            exporter.Export(excelPath, clientPath, serverPath);
+        }
+        private static void ExportShopItem(string repoRootDir)
+        {
+            string excelPath = ExportPathHelper.GetExcelPath(repoRootDir, "ShopItem.xlsx");
+            string clientPath = ExportPathHelper.GetClientOutputPath(repoRootDir, "ShopItemConfig.json");
+            string serverPath = ExportPathHelper.GetServerOutputPath(repoRootDir, "ShopItemConfig.json");
+
+            ShopItemExporter exporter = new ShopItemExporter();
             exporter.Export(excelPath, clientPath, serverPath);
         }
     }

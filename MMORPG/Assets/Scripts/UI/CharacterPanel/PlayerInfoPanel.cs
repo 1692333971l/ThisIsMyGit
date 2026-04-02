@@ -15,7 +15,6 @@ public class PlayerInfoPanel : MonoBehaviour
 
     private void Start()
     {
-        Init(GameApp.Instance.PlayerCharacterManager.GetCharacterInfo());
         GameApp.Instance.InventoryService.OnUseItemResponse += HandleUseItemResponse;
         GameApp.Instance.InventoryService.OnSellItemResponse += HandlSellItemResponse;
     }
@@ -23,6 +22,10 @@ public class PlayerInfoPanel : MonoBehaviour
     {
         GameApp.Instance.InventoryService.OnUseItemResponse -= HandleUseItemResponse;
         GameApp.Instance.InventoryService.OnSellItemResponse -= HandlSellItemResponse;
+    }
+    private void OnEnable()
+    {
+        Init(GameApp.Instance.PlayerCharacterManager.GetCharacterInfo());
     }
     private void HandleUseItemResponse(UseItemResponse response)
     {

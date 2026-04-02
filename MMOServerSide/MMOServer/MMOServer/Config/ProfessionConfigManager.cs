@@ -10,9 +10,13 @@ namespace MMOServer.Config
         /// <summary>
         /// 加载职业配置
         /// </summary>
-        public void Load(string configPath)
+        public ProfessionConfigManager()
         {
             _configDict.Clear();
+
+            string currentDir = AppDomain.CurrentDomain.BaseDirectory;
+            string repoRootDir = Path.GetFullPath(Path.Combine(currentDir, "..", "..", ".."));
+            string configPath = Path.Combine(repoRootDir, "Config", "Generated", "ProfessionConfig.json");
 
             if (!File.Exists(configPath))
             {

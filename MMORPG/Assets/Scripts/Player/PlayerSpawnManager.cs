@@ -7,10 +7,7 @@ using UnityEngine;
 // 当前分成两类生成：
 // 1. SpawnCurrentPlayer()  -> 生成本地玩家
 // 2. SpawnRemotePlayer()   -> 生成远端玩家
-//
-// 为什么要单独有这个类：
-// 因为“生成角色模型”本身是一项独立职责，
-// 不应该直接塞进 MainCityEntryController 或 CharacterService 里。
+
 public class PlayerSpawnManager
 {
     /// <summary>
@@ -52,21 +49,9 @@ public class PlayerSpawnManager
         // 后续摄像机绑定、本地控制、其他逻辑都可能需要拿到这个对象
         GameApp.Instance.PlayerCharacterManager.SetCharacterObject(playerObject);
 
-        // 尝试获取角色对象上的 PlayerCharacterView 组件
-        // 这个组件用来切换角色的表现模式（本地/远端/预览）
-        PlayerCharacterView playerView = playerObject.GetComponent<PlayerCharacterView>();
-
-        // 如果有这个组件，就把它初始化为“本地玩家模式”
-        if (playerView != null)
-        {
-            playerView.SetupAsLocalPlayer();
-        }
-
         // 尝试获取本地网络同步器组件
         // 它负责把本地玩家的位置、朝向、移动状态定时上报给服务端
         LocalPlayerNetworkSync localSync = playerObject.GetComponent<LocalPlayerNetworkSync>();
-
-        // 如果 prefab 上没有预先挂这个组件，就运行时动态加一个
         if (localSync == null)
         {
             localSync = playerObject.AddComponent<LocalPlayerNetworkSync>();
@@ -74,12 +59,18 @@ public class PlayerSpawnManager
 
         // 尝试同步本地输入控制器
         PlayerInputController inputController = playerObject.GetComponent<PlayerInputController>();
-
-        // 如果没有运行时挂载
         if (inputController == null)
         {
             inputController = playerObject.AddComponent<PlayerInputController>();
         }
+
+        // 尝试同步本地移动控制器
+        PlayerMovementController playerMovementController = playerObject.GetComponent<PlayerMovementController>();
+        if (playerMovementController == null)
+        {
+            playerMovementController = playerObject.AddComponent<PlayerMovementController>();
+        }
+        playerMovementController.SetCanMove(true);
 
         // 初始化本地同步器，传入当前角色信息（主要用于拿 CharacterId）
         localSync.Init(characterInfo);
@@ -121,16 +112,6 @@ public class PlayerSpawnManager
 
         // 给远端玩家对象命名，方便在 Hierarchy 中区分
         playerObject.name = $"RemotePlayer_{characterInfo.Name}_{characterInfo.CharacterId}";
-
-        // 获取角色表现组件
-        PlayerCharacterView playerView = playerObject.GetComponent<PlayerCharacterView>();
-
-        // 如果存在，则把它设置成“远端玩家模式”
-        // 远端玩家模式会禁用本地输入和本地移动控制
-        if (playerView != null)
-        {
-            playerView.SetupAsRemotePlayer();
-        }
 
         // 获取远端同步器组件
         // 它负责根据服务端同步过来的状态，平滑表现远端角色

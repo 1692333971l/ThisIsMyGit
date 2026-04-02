@@ -11,9 +11,12 @@ namespace MMOServer.Core
         public NetServer NetServer { get; private set; }
         public ProfessionConfigManager ProfessionConfigManager { get; private set; }
         public ItemConfigManager ItemConfigManager { get; private set; }
+        public NpcConfigManager NpcConfigManager { get; private set; }
+        public ShopItemConfigManager ShopItemConfigManager { get; private set; }
         public UserService UserService { get; private set; }
         public CharacterService CharacterService { get; private set; }
         public WorldService WorldService { get; private set; }
+        public ShopService ShopService { get; private set; }
         public InventoryService InventoryService { get; private set; }
         public OnlinePlayerManager OnlinePlayerManager { get; private set; }
 
@@ -29,9 +32,12 @@ namespace MMOServer.Core
             NetServer               = new NetServer();
             ProfessionConfigManager = new ProfessionConfigManager();
             ItemConfigManager       = new ItemConfigManager();
+            NpcConfigManager        = new NpcConfigManager();
+            ShopItemConfigManager   = new ShopItemConfigManager();
             UserService             = new UserService();
             CharacterService        = new CharacterService();
             WorldService            = new WorldService();
+            ShopService             = new ShopService();
             InventoryService        = new InventoryService();
             OnlinePlayerManager     = new OnlinePlayerManager();
         }
@@ -42,21 +48,7 @@ namespace MMOServer.Core
             Logger.Info("Initialize modules...");
             Logger.Info("Server started successfully.");
 
-            LoadConfigs();
             NetServer.Start(8888);
-
-        }
-        /// <summary>
-        /// 加载配置表
-        /// </summary>
-        private void LoadConfigs()
-        {
-            string currentDir = AppDomain.CurrentDomain.BaseDirectory;
-            string repoRootDir = Path.GetFullPath(Path.Combine(currentDir, "..", "..", ".."));
-            string configPath = Path.Combine(repoRootDir, "Config", "Generated", "ProfessionConfig.json");
-            ProfessionConfigManager.Load(configPath);
-            string itemConfigPath = Path.Combine(repoRootDir, "Config", "Generated", "ItemConfig.json");
-            ItemConfigManager.Load(itemConfigPath);
         }
     }
 }

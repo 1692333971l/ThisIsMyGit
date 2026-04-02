@@ -21,9 +21,9 @@ public class ProfessionConfigManager
             return;
         }
 
-        ProfessionConfig[] configs = JsonArrayHelper.FromJson<ProfessionConfig>(textAsset.text);
+        List<ProfessionConfig> configs = JsonArrayHelper.FromJsonArray<ProfessionConfig>(textAsset.text);
 
-        if (configs == null || configs.Length == 0)
+        if (configs == null || configs.Count == 0)
         {
             Debug.LogWarning("职业配置为空。");
             return;

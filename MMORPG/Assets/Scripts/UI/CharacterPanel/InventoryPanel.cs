@@ -47,6 +47,7 @@ public class InventoryPanel : MonoBehaviour
                 item.InitEmpty(i);
             }
         }
+        OnClickInventorySlotItem(null);
     }
     //格子点击事件
     private void OnClickInventorySlotItem(InventoryItemInfo inventoryItemInfo)

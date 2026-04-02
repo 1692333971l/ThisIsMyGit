@@ -1,0 +1,26 @@
+[
+  {
+    "NpcId": 1,
+    "NpcName": "\u6742\u8D27\u5546\u4EBA",
+    "HasTask": 0,
+    "TaskId": 0,
+    "HasShop": 1,
+    "ShopId": 1
+  },
+  {
+    "NpcId": 2,
+    "NpcName": "\u94C1\u5320",
+    "HasTask": 0,
+    "TaskId": 0,
+    "HasShop": 0,
+    "ShopId": 0
+  },
+  {
+    "NpcId": 3,
+    "NpcName": "\u5DE5\u4F1A\u63A5\u5F85",
+    "HasTask": 1,
+    "TaskId": 1,
+    "HasShop": 0,
+    "ShopId": 0
+  }
+]

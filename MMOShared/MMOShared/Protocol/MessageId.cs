@@ -39,5 +39,8 @@ namespace Protocol
         // 出售道具
         SellItemRequest = 1019,
         SellItemResponse = 1020,
+        // 购买商店道具
+        BuyShopItemRequest = 1021,
+        BuyShopItemResponse = 1022,
     }
 }

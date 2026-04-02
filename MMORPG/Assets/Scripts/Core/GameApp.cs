@@ -15,15 +15,19 @@ public class GameApp : MonoBehaviour
     public CharacterService CharacterService { get; private set; }//角色选择创建业务层
     public WorldService WorldService { get; private set; }//世界消息业务层
     public InventoryService InventoryService { get; private set; }//背包业务层
+    public ShopService ShopService { get; private set; }//商店业务层
     //当前玩家数据交互服务
     public PlayerCharacterManager PlayerCharacterManager { get; private set; }//玩家当前角色信息管理器
     public PlayerInventoryManager PlayerInventoryManager { get; private set; }//玩家当前角色背包管理器
+    public InteractionManager InteractionManager { get; private set; }//玩家交互管理器
     //联机服务
     public PlayerSpawnManager PlayerSpawnManager { get; private set; }//玩家生成管理器
     public RemotePlayerManager RemotePlayerManager { get; private set; }//场景里其他玩家对象的总表
     //配置表
     public ProfessionConfigManager ProfessionConfigManager { get; private set; }//职业配置表管理器
     public ItemConfigManager ItemConfigManager { get; private set; }//道具配置表管理器
+    public NpcConfigManager NpcConfigManager { get; private set; }//NPC配置表管理器
+    public ShopItemConfigManager ShopItemConfigManager { get; private set; }//商店配置表管理器
 
     private bool _hasSentExit = false;
     public string ServerIp { get; private set; } = "127.0.0.1";
@@ -63,15 +67,19 @@ public class GameApp : MonoBehaviour
         CharacterService        = new CharacterService();
         WorldService            = new WorldService();
         InventoryService        = new InventoryService();
+        ShopService             = new ShopService();
         //当前玩家数据交互服务
         PlayerCharacterManager  = new PlayerCharacterManager();
         PlayerInventoryManager  = new PlayerInventoryManager();
+        InteractionManager      = new InteractionManager();
         //联机服务
         PlayerSpawnManager      = new PlayerSpawnManager();
         RemotePlayerManager     = new RemotePlayerManager();
         //配置表
         ProfessionConfigManager = new ProfessionConfigManager();
-        ItemConfigManager = new ItemConfigManager();
+        ItemConfigManager       = new ItemConfigManager();
+        NpcConfigManager        = new NpcConfigManager();
+        ShopItemConfigManager   = new ShopItemConfigManager();
     }
     //链接服务端
     private void NetClientConnect()
@@ -85,7 +93,6 @@ public class GameApp : MonoBehaviour
     {
         SendExitRequest();
     }
-
     private void OnDestroy()
     {
         if (Instance == this)

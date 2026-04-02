@@ -51,11 +51,13 @@ namespace MMOServer.Services
                 {
                     itemInfoList.Add(ToInventoryItemInfo(entity));
                 }
+                // 规范化背包
+                List<InventoryItemInfo> normalizedItemList = NormalizeInventory(characterId);
 
                 response.ErrorCode = (int)ErrorCode.Success;
                 response.Message = "获取背包成功";
                 response.CharacterId = characterId;
-                response.ItemList = itemInfoList;
+                response.ItemList = normalizedItemList;
 
                 return BuildGetInventoryResponse(response);
             }
@@ -207,7 +209,7 @@ namespace MMOServer.Services
                 character.Hp = newHp;
                 character.Mp = newMp;
 
-                // 9. 规范化背包（去空洞，后续也可在这里扩展自动堆叠）
+                // 9. 规范化背包
                 List<InventoryItemInfo> normalizedItemList = NormalizeInventory(characterId);
 
                 // 10. 返回最新结果
@@ -357,7 +359,7 @@ namespace MMOServer.Services
                 // 11. 回写最新角色状态
                 character.Gold = newGold;
 
-                // 12. 规范化背包（去空洞，后续也可扩展自动堆叠）
+                // 12. 规范化背包
                 List<InventoryItemInfo> normalizedItemList = NormalizeInventory(characterId);
 
                 // 13. 返回最新结果
@@ -389,9 +391,10 @@ namespace MMOServer.Services
         }
         /// <summary>
         /// 规范化当前角色背包
-        /// 1. 去掉空洞
-        /// 2. 按原格子顺序重新连续分配 SlotIndex
-        /// 
+        /// 1. 合并同类物品堆叠
+        /// 2. 按最大堆叠数重新拆分
+        /// 3. 去掉空洞
+        /// 4. 从 0 开始重新连续分配 SlotIndex
         /// </summary>
         private List<InventoryItemInfo> NormalizeInventory(int characterId)
         {
@@ -403,25 +406,75 @@ namespace MMOServer.Services
                 return new List<InventoryItemInfo>();
             }
 
-            // 2. 先按原格子索引从小到大排序
-            List<InventoryItemEntity> orderedList = itemList
-                .OrderBy(item => item.SlotIndex)
+            // 2. 按 ItemId 分组，并统计总数量
+            Dictionary<int, int> totalCountDict = new Dictionary<int, int>();
+
+            foreach (InventoryItemEntity item in itemList)
+            {
+                if (!totalCountDict.ContainsKey(item.ItemId))
+                {
+                    totalCountDict[item.ItemId] = 0;
+                }
+
+                totalCountDict[item.ItemId] += item.Count;
+            }
+
+            // 3. 按“原始最早出现顺序”保留物品种类顺序
+            // 这样整理后物品大类顺序更稳定，不会每次都乱跳
+            List<int> orderedItemIdList = itemList
+                .OrderBy(x => x.SlotIndex)
+                .Select(x => x.ItemId)
+                .Distinct()
                 .ToList();
 
-            // 3. 重新从 0 开始连续分配格子
-            for (int i = 0; i < orderedList.Count; i++)
-            {
-                InventoryItemEntity item = orderedList[i];
+            // 4. 根据总数量 + MaxStackCount 重新构建标准背包数据
+            List<InventoryItemEntity> normalizedList = new List<InventoryItemEntity>();
+            int nextSlotIndex = 0;
 
-                if (item.SlotIndex != i)
+            foreach (int itemId in orderedItemIdList)
+            {
+                int totalCount = totalCountDict[itemId];
+
+                ItemConfig itemConfig = GameServer.Instance.ItemConfigManager.GetById(itemId);
+                if (itemConfig == null)
                 {
-                    _inventoryRepository.UpdateItemSlotIndex(item.Id, i);
-                    item.SlotIndex = i;
+                    throw new Exception($"道具配置不存在，ItemId = {itemId}");
+                }
+
+                int maxStackCount = itemConfig.MaxStackCount;
+                if (maxStackCount <= 0)
+                {
+                    throw new Exception($"道具最大堆叠数量配置无效，ItemId = {itemId}");
+                }
+
+                while (totalCount > 0)
+                {
+                    int stackCount = Math.Min(totalCount, maxStackCount);
+
+                    normalizedList.Add(new InventoryItemEntity
+                    {
+                        CharacterId = characterId,
+                        SlotIndex = nextSlotIndex,
+                        ItemId = itemId,
+                        Count = stackCount
+                    });
+
+                    totalCount -= stackCount;
+                    nextSlotIndex++;
                 }
             }
 
-            // 4. 返回整理后的最新协议数据
-            return orderedList.Select(ToInventoryItemInfo).ToList();
+            // 5. 清空旧背包记录
+            _inventoryRepository.DeleteAllByCharacterId(characterId);
+
+            // 6. 插入新的规范化背包记录
+            foreach (InventoryItemEntity item in normalizedList)
+            {
+                _inventoryRepository.Insert(item);
+            }
+
+            // 7. 返回整理后的最新协议数据
+            return normalizedList.Select(ToInventoryItemInfo).ToList();
         }
 
         /// <summary>

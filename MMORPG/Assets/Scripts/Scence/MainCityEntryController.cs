@@ -19,11 +19,9 @@ public class MainCityEntryController : MonoBehaviour
     // 跟随摄像机组件
     [SerializeField] private CameraFollow _cameraFollow;
     
-    // 角色呼出面板
-    [SerializeField] private Image _characterPanel;
+    // UI管理器
+    [SerializeField] private UIManager _uiManager;
 
-    // 角色信息UI
-    [SerializeField] private PlayerInfoPanel _playerInfoPanel;
 
     /// <summary>
     /// Unity 生命周期：OnEnable
@@ -127,7 +125,7 @@ public class MainCityEntryController : MonoBehaviour
         GameApp.Instance.PlayerCharacterManager.SetCharacterInfo(response.CharacterInfo);
 
         // 初始化本地玩家UI
-        _playerInfoPanel.Init(response.CharacterInfo);
+        _uiManager.PlayerInfoPanelInit(response.CharacterInfo);
 
         // 生成本地玩家对象
         GameObject playerObject = GameApp.Instance.PlayerSpawnManager.SpawnCurrentPlayer();
@@ -139,7 +137,7 @@ public class MainCityEntryController : MonoBehaviour
         PlayerMovementController movementController = playerObject.GetComponent<PlayerMovementController>();
 
         // 将角色可操作面板传入角色控制器
-        playerObject.GetComponent<PlayerInputController>().Init(_characterPanel, _cameraFollow);
+        playerObject.GetComponent<PlayerInputController>().Init(_uiManager, _cameraFollow, movementController);
 
         // 如果存在移动控制器，则把摄像机 Transform 传给它
         // 因为你的移动方向是基于摄像机前后左右来计算的

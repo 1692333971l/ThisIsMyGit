@@ -10,9 +10,13 @@ namespace MMOServer.Config
         /// <summary>
         /// 加载道具配置
         /// </summary>
-        public void Load(string configPath)
+        public ItemConfigManager()
         {
             _configDict.Clear();
+
+            string currentDir = AppDomain.CurrentDomain.BaseDirectory;
+            string repoRootDir = Path.GetFullPath(Path.Combine(currentDir, "..", "..", ".."));
+            string configPath = Path.Combine(repoRootDir, "Config", "Generated", "ItemConfig.json");
 
             if (!File.Exists(configPath))
             {
