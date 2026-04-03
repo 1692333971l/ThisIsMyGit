@@ -28,9 +28,12 @@ public class PlayerInputController : MonoBehaviour
         //交互
         if (Input.GetKeyDown(KeyCode.F) && !_isCharacterPanelPlaying)
         {
-            _uiManager.SetPlayerInfoPanelActive(false);
-            GameApp.Instance.InteractionManager.Interact(transform);
-            SetPlayerController(true, false, false);
+            bool interact = GameApp.Instance.InteractionManager.Interact(transform);
+            if (interact)
+            {
+                _uiManager.SetPlayerInfoPanelActive(false);
+                SetPlayerController(true, false, false);
+            }
         }
         //关闭面板
         if (Input.GetKeyDown(KeyCode.Escape) && _isCharacterPanelPlaying)

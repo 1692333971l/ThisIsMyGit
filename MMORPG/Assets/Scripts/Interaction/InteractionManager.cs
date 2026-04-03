@@ -30,15 +30,16 @@ public class InteractionManager
         return _iInteractable;
     }
     //交互
-    public void Interact(Transform transform)
+    public bool Interact(Transform transform)
     {
         if (_interactables == null || _interactables.Count == 0)
         {
             _iInteractable = null;
-            return;
+            return false;
         }
         CalculateBestInteractable(transform);
         _iInteractable.Interact();
+        return true;
     }
     //计算最佳交互对象
     private void CalculateBestInteractable(Transform transform)

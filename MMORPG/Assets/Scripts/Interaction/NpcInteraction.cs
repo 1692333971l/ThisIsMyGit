@@ -6,7 +6,7 @@ public class NpcInteraction : MonoBehaviour, IInteractable
 {
     [SerializeField] private int _npcId;//NPC配置表ID
     [SerializeField] private TMP_Text _hint;//世界提示文本
-    [SerializeField] private UIManager _uiManager;//对话面板
+    [SerializeField] private UIManager _uiManager;//UI管理器
 
     public Transform GetTransform()
     {

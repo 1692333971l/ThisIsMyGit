@@ -179,12 +179,8 @@ namespace MMOServer.Services
                     return BuildBuyShopItemResponse(response);
                 }
 
-                // 9. 扣金币
-                int newGold = character.Gold - totalPrice;
-                _characterRepository.UpdateCharacterGold(characterId, newGold);
-                character.Gold = newGold;
 
-                // 10. 背包容量校验
+                // 9. 背包容量校验
                 if (!_inventoryDomainService.CanAddItem(characterId, request.ItemId, request.Quantity, itemConfig.MaxStackCount))
                 {
                     response.ErrorCode = (int)ErrorCode.UnknownError;
@@ -198,6 +194,11 @@ namespace MMOServer.Services
                     response.ItemList = BuildInventoryItemInfoList(characterId);
                     return BuildBuyShopItemResponse(response);
                 }
+
+                // 10. 扣金币
+                int newGold = character.Gold - totalPrice;
+                _characterRepository.UpdateCharacterGold(characterId, newGold);
+                character.Gold = newGold;
 
                 // 11. 加物品进背包
                 _inventoryDomainService.AddItem(characterId, request.ItemId, request.Quantity, itemConfig.MaxStackCount);
