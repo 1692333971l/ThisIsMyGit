@@ -3,6 +3,7 @@ using MMOServer.Core;
 using MMOServer.Database;
 using MMOServer.Models;
 using MMOServer.Network;
+using MMOServer.Services.Common;
 using Protocol;
 
 namespace MMOServer.Services
@@ -11,6 +12,7 @@ namespace MMOServer.Services
     {
         private readonly InventoryRepository _inventoryRepository;
         private readonly CharacterRepository _characterRepository;
+        private readonly InventoryDomainService _inventoryDomainService;
 
         private const int UseEffectTypeRestoreHp = 1;// 1 = 回复HP
         private const int UseEffectTypeRestoreMp = 2;// 2 = 回复MP
@@ -19,6 +21,7 @@ namespace MMOServer.Services
         {
             _inventoryRepository = new InventoryRepository();
             _characterRepository = new CharacterRepository();
+            _inventoryDomainService = new InventoryDomainService();
         }
 
         /// <summary>
@@ -52,7 +55,7 @@ namespace MMOServer.Services
                     itemInfoList.Add(ToInventoryItemInfo(entity));
                 }
                 // 规范化背包
-                List<InventoryItemInfo> normalizedItemList = NormalizeInventory(characterId);
+                List<InventoryItemInfo> normalizedItemList = _inventoryDomainService.NormalizeInventory(characterId);
 
                 response.ErrorCode = (int)ErrorCode.Success;
                 response.Message = "获取背包成功";
@@ -210,7 +213,7 @@ namespace MMOServer.Services
                 character.Mp = newMp;
 
                 // 9. 规范化背包
-                List<InventoryItemInfo> normalizedItemList = NormalizeInventory(characterId);
+                List<InventoryItemInfo> normalizedItemList = _inventoryDomainService.NormalizeInventory(characterId);
 
                 // 10. 返回最新结果
                 response.ErrorCode = (int)ErrorCode.Success;
@@ -360,7 +363,7 @@ namespace MMOServer.Services
                 character.Gold = newGold;
 
                 // 12. 规范化背包
-                List<InventoryItemInfo> normalizedItemList = NormalizeInventory(characterId);
+                List<InventoryItemInfo> normalizedItemList = _inventoryDomainService.NormalizeInventory(characterId);
 
                 // 13. 返回最新结果
                 response.ErrorCode = (int)ErrorCode.Success;
@@ -390,94 +393,6 @@ namespace MMOServer.Services
             }
         }
         /// <summary>
-        /// 规范化当前角色背包
-        /// 1. 合并同类物品堆叠
-        /// 2. 按最大堆叠数重新拆分
-        /// 3. 去掉空洞
-        /// 4. 从 0 开始重新连续分配 SlotIndex
-        /// </summary>
-        private List<InventoryItemInfo> NormalizeInventory(int characterId)
-        {
-            // 1. 读取当前角色全部背包物品
-            List<InventoryItemEntity> itemList = _inventoryRepository.GetInventoryListByCharacterId(characterId);
-
-            if (itemList == null || itemList.Count == 0)
-            {
-                return new List<InventoryItemInfo>();
-            }
-
-            // 2. 按 ItemId 分组，并统计总数量
-            Dictionary<int, int> totalCountDict = new Dictionary<int, int>();
-
-            foreach (InventoryItemEntity item in itemList)
-            {
-                if (!totalCountDict.ContainsKey(item.ItemId))
-                {
-                    totalCountDict[item.ItemId] = 0;
-                }
-
-                totalCountDict[item.ItemId] += item.Count;
-            }
-
-            // 3. 按“原始最早出现顺序”保留物品种类顺序
-            // 这样整理后物品大类顺序更稳定，不会每次都乱跳
-            List<int> orderedItemIdList = itemList
-                .OrderBy(x => x.SlotIndex)
-                .Select(x => x.ItemId)
-                .Distinct()
-                .ToList();
-
-            // 4. 根据总数量 + MaxStackCount 重新构建标准背包数据
-            List<InventoryItemEntity> normalizedList = new List<InventoryItemEntity>();
-            int nextSlotIndex = 0;
-
-            foreach (int itemId in orderedItemIdList)
-            {
-                int totalCount = totalCountDict[itemId];
-
-                ItemConfig itemConfig = GameServer.Instance.ItemConfigManager.GetById(itemId);
-                if (itemConfig == null)
-                {
-                    throw new Exception($"道具配置不存在，ItemId = {itemId}");
-                }
-
-                int maxStackCount = itemConfig.MaxStackCount;
-                if (maxStackCount <= 0)
-                {
-                    throw new Exception($"道具最大堆叠数量配置无效，ItemId = {itemId}");
-                }
-
-                while (totalCount > 0)
-                {
-                    int stackCount = Math.Min(totalCount, maxStackCount);
-
-                    normalizedList.Add(new InventoryItemEntity
-                    {
-                        CharacterId = characterId,
-                        SlotIndex = nextSlotIndex,
-                        ItemId = itemId,
-                        Count = stackCount
-                    });
-
-                    totalCount -= stackCount;
-                    nextSlotIndex++;
-                }
-            }
-
-            // 5. 清空旧背包记录
-            _inventoryRepository.DeleteAllByCharacterId(characterId);
-
-            // 6. 插入新的规范化背包记录
-            foreach (InventoryItemEntity item in normalizedList)
-            {
-                _inventoryRepository.Insert(item);
-            }
-
-            // 7. 返回整理后的最新协议数据
-            return normalizedList.Select(ToInventoryItemInfo).ToList();
-        }
-
-        /// <summary>
         /// 数据库实体 -> 协议对象
         /// </summary>
         private InventoryItemInfo ToInventoryItemInfo(InventoryItemEntity entity)
@@ -489,7 +404,6 @@ namespace MMOServer.Services
                 Count = entity.Count
             };
         }
-
         /// <summary>
         /// CharacterEntity -> CharacterInfo
         /// </summary>

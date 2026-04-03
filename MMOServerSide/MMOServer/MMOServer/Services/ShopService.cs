@@ -3,19 +3,23 @@ using MMOServer.Core;
 using MMOServer.Database;
 using MMOServer.Models;
 using MMOServer.Network;
+using MMOServer.Services.Common;
 using Protocol;
 
 namespace MMOServer.Services
 {
     public class ShopService
     {
+        private const int MaxSlotCount = 72;
         private readonly CharacterRepository _characterRepository;
         private readonly InventoryRepository _inventoryRepository;
+        private readonly InventoryDomainService _inventoryDomainService;
 
         public ShopService()
         {
             _characterRepository = new CharacterRepository();
             _inventoryRepository = new InventoryRepository();
+            _inventoryDomainService = new InventoryDomainService();
         }
 
         /// <summary>
@@ -180,13 +184,28 @@ namespace MMOServer.Services
                 _characterRepository.UpdateCharacterGold(characterId, newGold);
                 character.Gold = newGold;
 
-                // 10. 加物品进背包
-                AddItemToInventory(characterId, request.ItemId, request.Quantity, itemConfig.MaxStackCount);
+                // 10. 背包容量校验
+                if (!_inventoryDomainService.CanAddItem(characterId, request.ItemId, request.Quantity, itemConfig.MaxStackCount))
+                {
+                    response.ErrorCode = (int)ErrorCode.UnknownError;
+                    response.Message = "背包空间不足";
+                    response.CharacterId = characterId;
+                    response.ShopId = request.ShopId;
+                    response.ItemId = request.ItemId;
+                    response.BuyQuantity = request.Quantity;
+                    response.RemainingLimitCount = shopItemConfig.IsLimited == 1 ? shopItemConfig.LimitCount : -1;
+                    response.CharacterInfo = ToCharacterInfo(character);
+                    response.ItemList = BuildInventoryItemInfoList(characterId);
+                    return BuildBuyShopItemResponse(response);
+                }
 
-                // 11. 背包规范化（去空洞）
-                List<InventoryItemInfo> normalizedItemList = NormalizeInventory(characterId);
+                // 11. 加物品进背包
+                _inventoryDomainService.AddItem(characterId, request.ItemId, request.Quantity, itemConfig.MaxStackCount);
 
-                // 12. 计算剩余限购数量（当前简化版）
+                // 12. 背包规范化
+                List<InventoryItemInfo> normalizedItemList = _inventoryDomainService.NormalizeInventory(characterId);
+
+                // 13. 计算剩余限购数量（当前简化版）
                 int remainingLimitCount = -1;
                 if (shopItemConfig.IsLimited == 1)
                 {
@@ -197,7 +216,7 @@ namespace MMOServer.Services
                     }
                 }
 
-                // 13. 返回最新结果
+                // 14. 返回最新结果
                 response.ErrorCode = (int)ErrorCode.Success;
                 response.Message = $"购买成功：{itemConfig.ItemName} x{request.Quantity}";
                 response.CharacterId = characterId;
@@ -241,112 +260,6 @@ namespace MMOServer.Services
             List<ShopItemConfig> shopItemList = GameServer.Instance.ShopItemConfigManager.GetByShopId(shopId);
             return shopItemList.FirstOrDefault(x => x.ItemId == itemId);
         }
-
-        /// <summary>
-        /// 往背包添加物品
-        /// 1. 优先堆叠到已有同类格子
-        /// 2. 剩余数量再找空格创建新格子
-        /// </summary>
-        private void AddItemToInventory(int characterId, int itemId, int quantity, int maxStackCount)
-        {
-            if (quantity <= 0)
-            {
-                return;
-            }
-
-            List<InventoryItemEntity> inventoryList = _inventoryRepository.GetInventoryListByCharacterId(characterId);
-
-            // 1. 先堆叠已有同类物品
-            foreach (InventoryItemEntity inventoryItem in inventoryList)
-            {
-                if (inventoryItem.ItemId != itemId)
-                {
-                    continue;
-                }
-
-                if (inventoryItem.Count >= maxStackCount)
-                {
-                    continue;
-                }
-
-                int canAdd = maxStackCount - inventoryItem.Count;
-                int addCount = Math.Min(canAdd, quantity);
-
-                if (addCount > 0)
-                {
-                    _inventoryRepository.UpdateItemCount(inventoryItem.Id, inventoryItem.Count + addCount);
-                    inventoryItem.Count += addCount;
-                    quantity -= addCount;
-                }
-
-                if (quantity <= 0)
-                {
-                    return;
-                }
-            }
-
-            // 2. 再找空格创建新物品格子
-            HashSet<int> usedSlotSet = inventoryList
-                .Select(x => x.SlotIndex)
-                .ToHashSet();
-
-            int nextSlotIndex = 0;
-
-            while (quantity > 0)
-            {
-                while (usedSlotSet.Contains(nextSlotIndex))
-                {
-                    nextSlotIndex++;
-                }
-
-                int addCount = Math.Min(maxStackCount, quantity);
-
-                InventoryItemEntity newItem = new InventoryItemEntity
-                {
-                    CharacterId = characterId,
-                    SlotIndex = nextSlotIndex,
-                    ItemId = itemId,
-                    Count = addCount
-                };
-
-                _inventoryRepository.Insert(newItem);
-
-                usedSlotSet.Add(nextSlotIndex);
-                quantity -= addCount;
-                nextSlotIndex++;
-            }
-        }
-
-        /// <summary>
-        /// 规范化当前角色背包（去空洞）
-        /// </summary>
-        private List<InventoryItemInfo> NormalizeInventory(int characterId)
-        {
-            List<InventoryItemEntity> itemList = _inventoryRepository.GetInventoryListByCharacterId(characterId);
-
-            if (itemList == null || itemList.Count == 0)
-            {
-                return new List<InventoryItemInfo>();
-            }
-
-            List<InventoryItemEntity> orderedList = itemList
-                .OrderBy(item => item.SlotIndex)
-                .ToList();
-
-            for (int i = 0; i < orderedList.Count; i++)
-            {
-                InventoryItemEntity item = orderedList[i];
-
-                if (item.SlotIndex != i)
-                {
-                    _inventoryRepository.UpdateItemSlotIndex(item.Id, i);
-                    item.SlotIndex = i;
-                }
-            }
-
-            return orderedList.Select(ToInventoryItemInfo).ToList();
-        }
-
         /// <summary>
         /// session 是否有效
         /// </summary>
