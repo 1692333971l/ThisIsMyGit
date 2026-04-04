@@ -35,6 +35,9 @@ namespace MMOServer.Network
                     GameServer.Instance.WorldService.HandlePlayerExit(requestMessage, session);
                     return null;
 
+                case MessageId.TeleportRequest: // 新增
+                    return GameServer.Instance.WorldService.HandleTeleport(requestMessage, session);
+
                 case MessageId.GetInventoryRequest:
                     return GameServer.Instance.InventoryService.HandleGetInventory(requestMessage, session);
 

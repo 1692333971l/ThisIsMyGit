@@ -1,3 +1,4 @@
+using Protocol;
 using UnityEngine;
 
 //当前本地玩家角色数据管理器
@@ -35,6 +36,18 @@ public class PlayerCharacterManager
     public Vector3 GetSpawnPosition()
     {
         return new Vector3(_currentCharacterInfo.PosX, _currentCharacterInfo.PosY, _currentCharacterInfo.PosZ);
+    }
+    //更新地图和坐标
+    public void UpdateMapAndPosition(int mapId, float posX, float posY, float posZ)
+    {
+        if (_currentCharacterInfo == null)
+        {
+            return;
+        }
+        _currentCharacterInfo.MapId = mapId;
+        _currentCharacterInfo.PosX = posX;
+        _currentCharacterInfo.PosY = posY;
+        _currentCharacterInfo.PosZ = posZ;
     }
     //当前是否已经有角色数据
     public bool HasCharacterInfo()

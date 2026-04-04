@@ -1,4 +1,5 @@
-﻿using MMOServer.Core;
+﻿using MMOServer.Config;
+using MMOServer.Core;
 using MMOServer.Database;
 using MMOServer.Models;
 using MMOServer.Network;
@@ -352,6 +353,161 @@ namespace MMOServer.Services
             // 打一条日志
             Logger.Warn($"HandlePlayerExit success: CharacterId={player.CharacterId}");
         }
+        /// <summary>
+        /// 处理地图传送请求
+        /// 
+        /// 流程：
+        /// 1. 反序列化传送请求
+        /// 2. 校验参数
+        /// 3. 校验 session 是否有效，且请求角色就是当前 session 的角色
+        /// 4. 从在线玩家管理器中找到该玩家
+        /// 5. 根据传送点配置校验是否允许从当前地图传送
+        /// 6. 先广播“离开旧地图”
+        /// 7. 更新玩家在线状态中的 MapId 和坐标
+        /// 8. 更新数据库中的 MapId 和坐标
+        /// 9. 返回 TeleportResponse 给当前客户端
+        /// </summary>
+        public NetMessage HandleTeleport(NetMessage requestMessage, ClientSession session)
+        {
+            TeleportRequest request = JsonHelper.FromJson<TeleportRequest>(requestMessage.BodyJson);
+
+            TeleportResponse response = new TeleportResponse();
+
+            // 1. 基础参数校验
+            if (request == null || request.CharacterId <= 0 || request.TargetPortalId <= 0)
+            {
+                response.ErrorCode = (int)ErrorCode.InvalidParams;
+                response.Message = "传送请求参数无效";
+                response.CharacterId = request?.CharacterId ?? 0;
+                response.TargetMapId = 0;
+                response.PosX = 0;
+                response.PosY = 0;
+                response.PosZ = 0;
+                return BuildTeleportResponse(response);
+            }
+
+            // 2. session 校验
+            if (session == null || session.UserId <= 0 || session.CurrentCharacterId <= 0)
+            {
+                response.ErrorCode = (int)ErrorCode.InvalidParams;
+                response.Message = "会话无效，无法传送";
+                response.CharacterId = request.CharacterId;
+                response.TargetMapId = 0;
+                response.PosX = 0;
+                response.PosY = 0;
+                response.PosZ = 0;
+                return BuildTeleportResponse(response);
+            }
+
+            // 3. 安全校验：请求里的角色必须就是当前 session 的角色
+            if (request.CharacterId != session.CurrentCharacterId)
+            {
+                response.ErrorCode = (int)ErrorCode.InvalidParams;
+                response.Message = "角色与当前会话不匹配，无法传送";
+                response.CharacterId = request.CharacterId;
+                response.TargetMapId = 0;
+                response.PosX = 0;
+                response.PosY = 0;
+                response.PosZ = 0;
+                return BuildTeleportResponse(response);
+            }
+
+            try
+            {
+                // 4. 查当前在线玩家
+                OnlinePlayer player = GameServer.Instance.OnlinePlayerManager.GetPlayer(request.CharacterId);
+                if (player == null)
+                {
+                    response.ErrorCode = (int)ErrorCode.UnknownError;
+                    response.Message = "当前角色不在线，无法传送";
+                    response.CharacterId = request.CharacterId;
+                    response.TargetMapId = 0;
+                    response.PosX = 0;
+                    response.PosY = 0;
+                    response.PosZ = 0;
+                    return BuildTeleportResponse(response);
+                }
+
+                // 5. 查传送点配置
+                MapPortalConfig portalConfig = GameServer.Instance.MapPortalConfigManager.GetById(request.TargetPortalId);
+                if (portalConfig == null)
+                {
+                    response.ErrorCode = (int)ErrorCode.UnknownError;
+                    response.Message = "传送点配置不存在";
+                    response.CharacterId = request.CharacterId;
+                    response.TargetMapId = 0;
+                    response.PosX = 0;
+                    response.PosY = 0;
+                    response.PosZ = 0;
+                    return BuildTeleportResponse(response);
+                }
+
+                // 6. 校验当前玩家是否处于该传送点允许的来源地图
+                if (player.MapId != portalConfig.FromMapId)
+                {
+                    response.ErrorCode = (int)ErrorCode.InvalidParams;
+                    response.Message = "当前地图不允许使用该传送点";
+                    response.CharacterId = request.CharacterId;
+                    response.TargetMapId = 0;
+                    response.PosX = 0;
+                    response.PosY = 0;
+                    response.PosZ = 0;
+                    return BuildTeleportResponse(response);
+                }
+
+                // 7. 先广播离开旧地图
+                // 旧地图其他玩家需要把该角色从场景中删除
+                BroadcastPlayerLeave(player);
+
+                // 8. 更新该玩家在线状态中的地图和坐标
+                player.MapId = portalConfig.ToMapId;
+                player.PosX = portalConfig.SpawnX;
+                player.PosY = portalConfig.SpawnY;
+                player.PosZ = portalConfig.SpawnZ;
+
+                // 传送后默认先认为角色静止
+                player.IsMoving = false;
+                player.IsRunning = false;
+                player.RotY = 0f;
+
+                // 9. 持久化到数据库
+                _characterRepository.UpdateCharacterPosition(
+                    player.CharacterId,
+                    player.MapId,
+                    player.PosX,
+                    player.PosY,
+                    player.PosZ
+                );
+
+                Logger.Info($"HandleTeleport success: CharacterId={player.CharacterId}, PortalId={request.TargetPortalId}, ToMapId={player.MapId}, Pos=({player.PosX}, {player.PosY}, {player.PosZ})");
+
+                // 10. 返回响应给当前客户端
+                response.ErrorCode = (int)ErrorCode.Success;
+                response.Message = "传送成功";
+                response.CharacterId = player.CharacterId;
+                response.TargetMapId = player.MapId;
+                response.PosX = player.PosX;
+                response.PosY = player.PosY;
+                response.PosZ = player.PosZ;
+
+                return BuildTeleportResponse(response);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"HandleTeleport failed: CharacterId={request?.CharacterId}, PortalId={request?.TargetPortalId}, Error={ex.Message}");
+                Logger.Error(ex.ToString());
+
+                response.ErrorCode = (int)ErrorCode.UnknownError;
+                response.Message = "传送失败";
+                response.CharacterId = request?.CharacterId ?? 0;
+                response.TargetMapId = 0;
+                response.PosX = 0;
+                response.PosY = 0;
+                response.PosZ = 0;
+
+                return BuildTeleportResponse(response);
+            }
+        }
 
         /// <summary>
         /// 构建进入游戏响应消息
@@ -437,6 +593,18 @@ namespace MMOServer.Services
             {
                 other.Session.SendMessage(message);
             }
+        }
+
+        /// <summary>
+        /// 构建传送响应消息
+        /// </summary>
+        private NetMessage BuildTeleportResponse(TeleportResponse response)
+        {
+            return new NetMessage
+            {
+                MessageId = (int)MessageId.TeleportResponse,
+                BodyJson = JsonHelper.ToJson(response)
+            };
         }
 
         /// <summary>

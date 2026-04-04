@@ -1,0 +1,20 @@
+[
+  {
+    "PortalId": 1,
+    "PortalName": "\u4E3B\u57CE\u53BB\u91CE\u5916",
+    "FromMapId": 1,
+    "ToMapId": 2,
+    "SpawnX": -10,
+    "SpawnY": 0.4,
+    "SpawnZ": 0
+  },
+  {
+    "PortalId": 2,
+    "PortalName": "\u91CE\u5916\u56DE\u4E3B\u57CE",
+    "FromMapId": 2,
+    "ToMapId": 1,
+    "SpawnX": 1,
+    "SpawnY": 0,
+    "SpawnZ": 0
+  }
+]

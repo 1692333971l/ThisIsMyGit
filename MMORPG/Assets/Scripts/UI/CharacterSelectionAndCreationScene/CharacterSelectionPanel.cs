@@ -12,7 +12,6 @@ public class CharacterSelectionPanel : MonoBehaviour
     [SerializeField] private Transform _characterViewPiont;//角色展示框根节点
     [SerializeField] private Button _logoutButton;//登出按钮
     [SerializeField] private Button _startGameButton;//游戏开始按钮
-
     private GameObject _characterModel;//当前展示角色模型
     private void Start()
     {
@@ -60,13 +59,14 @@ public class CharacterSelectionPanel : MonoBehaviour
     //开始游戏按钮点击事件
     private void OnClickStartGameButton()
     {
-        if (GameApp.Instance.PlayerCharacterManager.GetCharacterInfo() == null)
+        Protocol.CharacterInfo characterInfo = GameApp.Instance.PlayerCharacterManager.GetCharacterInfo();
+        if (characterInfo == null)
         {
             MessageHintWindowManger.Instance.ShowMessage("请选择角色");
             return;
         }
 
-        GameApp.Instance.SceneLoaderManager.LoadMainCity();
+        GameApp.Instance.SceneLoaderManager.LoadMapSceneByMapId(characterInfo.MapId);
     }
     //登出按钮点击事件
     private void OnClickLogoutButton()

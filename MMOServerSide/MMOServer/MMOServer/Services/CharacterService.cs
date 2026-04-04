@@ -2,8 +2,6 @@
 using MMOServer.Core;
 using MMOServer.Database;
 using MMOServer.Models;
-using MMOServer.Network;
-using MMOServer.World;
 using Protocol;
 
 namespace MMOServer.Services
@@ -94,7 +92,11 @@ namespace MMOServer.Services
                     Level = e.Level,// 等级
                     Gold = e.Gold,// 金币
                     Hp = e.Hp,// 当前生命值
-                    Mp = e.Mp// 当前法力值
+                    Mp = e.Mp,// 当前法力值
+                    MapId = e.MapId,// 地图id
+                    PosX = e.PosX,// x坐标
+                    PosY = e.PosY,// y坐标
+                    PosZ = e.PosZ,// z坐标
                 }).ToList();
 
                 // 构造并返回获取角色列表响应
@@ -193,7 +195,11 @@ namespace MMOServer.Services
                     Level = newCharacter.Level,
                     Gold = newCharacter.Gold,
                     Hp = newCharacter.Hp,
-                    Mp = newCharacter.Mp
+                    Mp = newCharacter.Mp,
+                    MapId = newCharacter.MapId,
+                    PosX = newCharacter.PosX,
+                    PosY = newCharacter.PosY,
+                    PosZ = newCharacter.PosZ,
                 };
 
                 return BuildCreateCharacterResponse(response);

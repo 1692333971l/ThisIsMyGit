@@ -15,6 +15,7 @@ namespace ConfigExporter
                 ExportItem(repoRootDir);
                 ExportNpc(repoRootDir);
                 ExportShopItem(repoRootDir);
+                ExportMapPortal(repoRootDir);
 
                 Console.WriteLine("全部导出完成。");
             }
@@ -63,6 +64,15 @@ namespace ConfigExporter
             string serverPath = ExportPathHelper.GetServerOutputPath(repoRootDir, "ShopItemConfig.json");
 
             ShopItemExporter exporter = new ShopItemExporter();
+            exporter.Export(excelPath, clientPath, serverPath);
+        }
+        private static void ExportMapPortal(string repoRootDir)
+        {
+            string excelPath = ExportPathHelper.GetExcelPath(repoRootDir, "MapPortal.xlsx");
+            string clientPath = ExportPathHelper.GetClientOutputPath(repoRootDir, "MapPortalConfig.json");
+            string serverPath = ExportPathHelper.GetServerOutputPath(repoRootDir, "MapPortalConfig.json");
+
+            MapPortalExporter exporter = new MapPortalExporter();
             exporter.Export(excelPath, clientPath, serverPath);
         }
     }

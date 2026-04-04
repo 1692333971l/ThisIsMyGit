@@ -1,20 +1,15 @@
 using Protocol;
 using UnityEngine;
-using UnityEngine.UI;
 
-// 主城入口控制器
-// 作用：作为“主城场景中的多人同步总入口”
+// 入口控制器
 //
 // 它负责：
-// 1. 进入主城场景后，向服务端发送 EnterGame 请求
+// 1. 进入场景后，向服务端发送 EnterGame 请求
 // 2. 收到 EnterGameResponse 后，生成本地玩家和已有的远端玩家
 // 3. 收到 PlayerEnterNotify 时，生成新进入的远端玩家
 // 4. 收到 PlayerLeaveNotify 时，移除离开的远端玩家
 // 5. 收到 PlayerMoveNotify 时，更新远端玩家移动表现
-//
-// 你可以把它理解成：
-// “主城场景里的联机流程总调度器”
-public class MainCityEntryController : MonoBehaviour
+public class MapEntryController : MonoBehaviour
 {
     // 跟随摄像机组件
     [SerializeField] private CameraFollow _cameraFollow;
@@ -22,15 +17,6 @@ public class MainCityEntryController : MonoBehaviour
     // UI管理器
     [SerializeField] private UIManager _uiManager;
 
-
-    /// <summary>
-    /// Unity 生命周期：OnEnable
-    /// 
-    /// 作用：
-    /// 订阅 WorldService 中的事件。
-    /// 这样当服务端返回进入游戏响应、玩家进入通知、离开通知、移动通知时，
-    /// 当前主城控制器就能收到并处理。
-    /// </summary>
     private void OnEnable()
     {
         // 订阅“进入游戏响应”事件
@@ -45,15 +31,6 @@ public class MainCityEntryController : MonoBehaviour
         // 订阅“玩家移动通知”事件
         GameApp.Instance.WorldService.OnPlayerMoveNotify += HandlePlayerMoveNotify;
     }
-
-    /// <summary>
-    /// Unity 生命周期：OnDisable
-    /// 
-    /// 作用：
-    /// 取消订阅事件，避免：
-    /// 1. 对象销毁后仍然收到事件
-    /// 2. 重复进入场景时重复订阅，导致回调执行多次
-    /// </summary>
     private void OnDisable()
     {
         // 如果 GameApp 已经销毁，则直接返回，避免空引用
@@ -71,19 +48,6 @@ public class MainCityEntryController : MonoBehaviour
         // 取消订阅“玩家移动通知”
         GameApp.Instance.WorldService.OnPlayerMoveNotify -= HandlePlayerMoveNotify;
     }
-
-    /// <summary>
-    /// Unity 生命周期：Start
-    /// 
-    /// 作用：
-    /// 当主城场景刚加载完时，执行主城联机初始化流程：
-    /// 1. 清掉之前可能残留的远端玩家对象
-    /// 2. 向服务端发送 EnterGame 请求
-    /// 3. 向服务端发送 GetInventory 请求
-    /// 
-    /// 为什么先 ClearAll：
-    /// 避免切场景、重新进入主城时，旧的远端玩家对象残留在场景中
-    /// </summary>
     private void Start()
     {
         // 清空场景中已有的远端玩家对象
@@ -100,9 +64,8 @@ public class MainCityEntryController : MonoBehaviour
     }
 
     /// <summary>
-    /// 处理进入主城响应
+    /// 处理进入地图响应
     /// 
-    /// 流程：
     /// 1. 检查进入是否成功
     /// 2. 保存当前本地玩家角色信息
     /// 3. 生成本地玩家对象
@@ -110,13 +73,13 @@ public class MainCityEntryController : MonoBehaviour
     /// 5. 给本地玩家的移动控制器设置摄像机引用
     /// 6. 生成当前地图中已在线的其他玩家
     /// </summary>
-    /// <param name="response">服务端返回的进入主城响应</param>
+    /// <param name="response">服务端返回的进入响应</param>
     private void HandleEnterGameResponse(EnterGameResponse response)
     {
         // 如果进入失败，则打印错误并返回
         if (response.ErrorCode != (int)ErrorCode.Success)
         {
-            Debug.LogError("进入主城失败：" + response.Message);
+            Debug.LogError("进入地图失败：" + response.Message);
             return;
         }
 
@@ -159,15 +122,7 @@ public class MainCityEntryController : MonoBehaviour
     }
 
     /// <summary>
-    /// 处理“有新玩家进入主城”的通知
-    /// 
-    /// 作用：
-    /// 当服务端广播说“某个新玩家进入地图”时，
-    /// 客户端需要把这个新玩家生成成远端玩家对象。
-    /// 
-    /// 这里有两个保护：
-    /// 1. 如果通知里的角色是自己，则跳过
-    /// 2. 如果这个远端玩家已经存在，则跳过，防止重复生成
+    /// 处理“有新玩家进入地图”的通知
     /// </summary>
     /// <param name="notify">玩家进入通知</param>
     private void HandlePlayerEnterNotify(PlayerEnterNotify notify)
@@ -194,11 +149,7 @@ public class MainCityEntryController : MonoBehaviour
     }
 
     /// <summary>
-    /// 处理“玩家离开主城”的通知
-    /// 
-    /// 作用：
-    /// 当服务端广播“某个玩家离开了地图”时，
-    /// 客户端要根据角色ID，把对应远端玩家对象从场景里删除。
+    /// 处理“玩家离开地图”的通知
     /// </summary>
     /// <param name="notify">玩家离开通知</param>
     private void HandlePlayerLeaveNotify(PlayerLeaveNotify notify)
@@ -208,15 +159,7 @@ public class MainCityEntryController : MonoBehaviour
     }
 
     /// <summary>
-    /// 处理“玩家移动同步”通知
-    /// 
-    /// 作用：
-    /// 当服务端广播某个玩家新的位置/朝向/移动状态时，
-    /// 客户端需要更新该远端玩家对象的表现。
-    /// 
-    /// 注意：
-    /// 如果广播里的角色其实是自己，则跳过。
-    /// 因为自己的移动是本地控制的，不需要再走远端表现逻辑。
+    /// 玩家移动同步通知
     /// </summary>
     /// <param name="notify">玩家移动通知</param>
     private void HandlePlayerMoveNotify(PlayerMoveNotify notify)

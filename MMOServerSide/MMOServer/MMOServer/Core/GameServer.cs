@@ -10,6 +10,7 @@ namespace MMOServer.Core
         public static GameServer Instance { get; private set; }
         public NetServer NetServer { get; private set; }
         public ProfessionConfigManager ProfessionConfigManager { get; private set; }
+        public MapPortalConfigManager MapPortalConfigManager { get; private set; }
         public ItemConfigManager ItemConfigManager { get; private set; }
         public NpcConfigManager NpcConfigManager { get; private set; }
         public ShopItemConfigManager ShopItemConfigManager { get; private set; }
@@ -31,6 +32,7 @@ namespace MMOServer.Core
 
             NetServer               = new NetServer();
             ProfessionConfigManager = new ProfessionConfigManager();
+            MapPortalConfigManager  = new MapPortalConfigManager();
             ItemConfigManager       = new ItemConfigManager();
             NpcConfigManager        = new NpcConfigManager();
             ShopItemConfigManager   = new ShopItemConfigManager();

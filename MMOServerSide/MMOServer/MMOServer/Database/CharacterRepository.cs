@@ -17,10 +17,12 @@ namespace MMOServer.Database
                 conn.Open();
 
                 string sql = @"
-                    SELECT Id, UserId, Name, Profession, Level, Gold, Hp, Mp
-                    FROM dbo.Characters
-                    WHERE UserId = @UserId
-                    ORDER BY Id ASC";
+            SELECT 
+                Id, UserId, Name, Profession, Level, Gold, Hp, Mp,
+                MapId, PosX, PosY, PosZ
+            FROM dbo.Characters
+            WHERE UserId = @UserId
+            ORDER BY Id ASC";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
@@ -39,7 +41,12 @@ namespace MMOServer.Database
                                 Level = reader.GetInt32(4),
                                 Gold = reader.GetInt32(5),
                                 Hp = reader.GetInt32(6),
-                                Mp = reader.GetInt32(7)
+                                Mp = reader.GetInt32(7),
+
+                                MapId = reader.GetInt32(8),
+                                PosX = Convert.ToSingle(reader.GetDouble(9)),
+                                PosY = Convert.ToSingle(reader.GetDouble(10)),
+                                PosZ = Convert.ToSingle(reader.GetDouble(11))
                             };
 
                             result.Add(entity);

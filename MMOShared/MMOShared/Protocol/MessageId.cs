@@ -42,5 +42,8 @@ namespace Protocol
         // 购买商店道具
         BuyShopItemRequest = 1021,
         BuyShopItemResponse = 1022,
+        // 传送
+        TeleportRequest = 1023,
+        TeleportResponse = 1024,
     }
 }

@@ -27,6 +27,9 @@ public class ClientMessageDispatcher
             case MessageId.EnterGameResponse://进入游戏响应
                 GameApp.Instance.WorldService.HandleEnterGameResponse(message);
                 break;
+            case MessageId.TeleportResponse://地图传送响应
+                GameApp.Instance.WorldService.HandleTeleportResponse(message);
+                break;
             case MessageId.PlayerEnterNotify://角色进入通知
                 GameApp.Instance.WorldService.HandlePlayerEnterNotify(message);
                 break;
