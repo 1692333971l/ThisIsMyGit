@@ -22,5 +22,149 @@
     "IsLimited": 0,
     "LimitCount": 0,
     "Sort": 3
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3001,
+    "Price": 100,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 4
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3002,
+    "Price": 200,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 5
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3003,
+    "Price": 400,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 6
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3004,
+    "Price": 100,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 7
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3005,
+    "Price": 200,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 8
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3006,
+    "Price": 400,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 9
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3007,
+    "Price": 100,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 10
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3008,
+    "Price": 200,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 11
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3009,
+    "Price": 400,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 12
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3010,
+    "Price": 100,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 13
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3011,
+    "Price": 200,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 14
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3012,
+    "Price": 400,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 15
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3013,
+    "Price": 100,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 16
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3014,
+    "Price": 200,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 17
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3015,
+    "Price": 400,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 18
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3016,
+    "Price": 100,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 19
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3017,
+    "Price": 200,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 20
+  },
+  {
+    "ShopId": 2,
+    "ItemId": 3018,
+    "Price": 400,
+    "IsLimited": 1,
+    "LimitCount": 1,
+    "Sort": 21
   }
 ]

@@ -11,6 +11,7 @@ public class InventoryItemOperateMenu : MonoBehaviour
     [SerializeField] private TMP_Text _quantityText;//出售数量文本
     [SerializeField] private TMP_Text _description;//详细描述
     [SerializeField] private Button _useButton;//使用按钮
+    [SerializeField] private Button _equipButton;//装备按钮
     [SerializeField] private Button _sellButton;//出售按钮
 
     private InventoryItemInfo _inventoryItemInfo;//格子信息
@@ -23,6 +24,7 @@ public class InventoryItemOperateMenu : MonoBehaviour
         _quantity.onValueChanged.AddListener(OnCountValueChanged);
         _useButton.onClick.AddListener(OnClickUseButton);
         _sellButton.onClick.AddListener(OnClickSellButton);
+        _equipButton.onClick.AddListener(OnClickEquipButton);
     }
     public void Init(InventoryItemInfo inventoryItemInfo)
     {
@@ -31,13 +33,22 @@ public class InventoryItemOperateMenu : MonoBehaviour
         _quantity.maxValue = inventoryItemInfo.Count;
 
         ItemConfig itemConfig = GameApp.Instance.ItemConfigManager.GetById(inventoryItemInfo.ItemId);
-        if (itemConfig.CanUse == 1)
+        if (itemConfig.CanUse != 1)
         {
-            _useButton.interactable = true;
+            _useButton.interactable = false;
         }
         else
         {
-            _useButton.interactable = false;
+            _useButton.interactable = true;
+        }
+        if (itemConfig.CanEquip != 1)
+        {
+            _equipButton.interactable = false;
+
+        }
+        else
+        {
+            _equipButton.interactable = true;
         }
         _description.text = itemConfig.ItemName + "\n" + "\n" + itemConfig.Description;
 
@@ -54,5 +65,9 @@ public class InventoryItemOperateMenu : MonoBehaviour
     private void OnClickSellButton()
     {
         OnSellClicked?.Invoke((int)_quantity.value, _inventoryItemInfo);
+    }
+    private void OnClickEquipButton()
+    {
+        GameApp.Instance.EquipmentService.SendEquipItemRequest(_inventoryItemInfo.SlotIndex);
     }
 }

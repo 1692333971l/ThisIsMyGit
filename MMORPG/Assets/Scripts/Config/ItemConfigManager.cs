@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-// 道具配置表管理器
+//道具配置表管理器
 public class ItemConfigManager
 {
     private readonly Dictionary<int, ItemConfig> _configDict = new Dictionary<int, ItemConfig>();
@@ -49,5 +49,25 @@ public class ItemConfigManager
     public List<ItemConfig> GetAll()
     {
         return _configDict.Values.ToList();
+    }
+
+    /// <summary>
+    /// 获取全部可装备道具配置
+    /// </summary>
+    public List<ItemConfig> GetAllEquipItems()
+    {
+        return _configDict.Values
+            .Where(x => x.CanEquip == 1)
+            .ToList();
+    }
+
+    /// <summary>
+    /// 根据装备槽位类型获取可装备道具配置
+    /// </summary>
+    public List<ItemConfig> GetEquipItemsBySlotType(int equipSlotType)
+    {
+        return _configDict.Values
+            .Where(x => x.CanEquip == 1 && x.EquipSlotType == equipSlotType)
+            .ToList();
     }
 }

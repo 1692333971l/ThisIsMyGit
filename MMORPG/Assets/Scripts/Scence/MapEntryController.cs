@@ -61,6 +61,8 @@ public class MapEntryController : MonoBehaviour
 
         //获取当前玩家背包
         GameApp.Instance.InventoryService.SendGetInventoryRequest();
+        //获取当前玩家装备
+        GameApp.Instance.EquipmentService.SendGetEquipmentRequest();
     }
 
     /// <summary>

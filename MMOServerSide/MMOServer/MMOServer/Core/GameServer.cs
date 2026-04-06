@@ -19,6 +19,7 @@ namespace MMOServer.Core
         public WorldService WorldService { get; private set; }
         public ShopService ShopService { get; private set; }
         public InventoryService InventoryService { get; private set; }
+        public EquipmentService EquipmentService { get; private set; }
         public OnlinePlayerManager OnlinePlayerManager { get; private set; }
 
         public GameServer()
@@ -41,6 +42,7 @@ namespace MMOServer.Core
             WorldService            = new WorldService();
             ShopService             = new ShopService();
             InventoryService        = new InventoryService();
+            EquipmentService        = new EquipmentService();
             OnlinePlayerManager     = new OnlinePlayerManager();
         }
 

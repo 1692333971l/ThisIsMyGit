@@ -12,8 +12,8 @@
     "NpcName": "\u94C1\u5320",
     "HasTask": 0,
     "TaskId": 0,
-    "HasShop": 0,
-    "ShopId": 0
+    "HasShop": 1,
+    "ShopId": 2
   },
   {
     "NpcId": 3,

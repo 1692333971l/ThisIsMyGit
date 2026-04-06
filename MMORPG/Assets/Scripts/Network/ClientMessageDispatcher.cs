@@ -48,8 +48,17 @@ public class ClientMessageDispatcher
             case MessageId.SellItemResponse://出售道具响应
                 GameApp.Instance.InventoryService.HandleSellItemResponse(message);
                 break;
-            case MessageId.BuyShopItemResponse://出售道具响应
+            case MessageId.BuyShopItemResponse://购买道具响应
                 GameApp.Instance.ShopService.HandleBuyShopItemResponse(message);
+                break;
+            case MessageId.GetEquipmentResponse://获取角色装备响应
+                GameApp.Instance.EquipmentService.HandleGetEquipmentResponse(message);
+                break;
+            case MessageId.EquipItemResponse://装备道具响应
+                GameApp.Instance.EquipmentService.HandleEquipItemResponse(message);
+                break;
+            case MessageId.UnequipItemResponse://卸下装备响应
+                GameApp.Instance.EquipmentService.HandleUnequipItemResponse(message);
                 break;
             default:
                 Debug.LogWarning($"ClientMessageDispatcher: unknown message id = {message.MessageId}");

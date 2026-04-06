@@ -1,44 +1,44 @@
-﻿using System.Text.Json;
-using MMOServer.Core;
+﻿using MMOServer.Core;
+using System.Text.Json;
 
 namespace MMOServer.Config
 {
     public class ItemConfigManager
     {
-        private readonly Dictionary<int, ItemConfig> _configDict = new Dictionary<int, ItemConfig>();
+        private readonly List<ItemConfig> _itemConfigList = new List<ItemConfig>();
+        private readonly Dictionary<int, ItemConfig> _itemConfigDict = new Dictionary<int, ItemConfig>();
 
         /// <summary>
-        /// 加载道具配置
+        /// 加载道具配置表
         /// </summary>
         public ItemConfigManager()
         {
-            _configDict.Clear();
-
             string currentDir = AppDomain.CurrentDomain.BaseDirectory;
             string repoRootDir = Path.GetFullPath(Path.Combine(currentDir, "..", "..", ".."));
-            string configPath = Path.Combine(repoRootDir, "Config", "Generated", "ItemConfig.json");
+            string filePath = Path.Combine(repoRootDir, "Config", "Generated", "ItemConfig.json");
 
-            if (!File.Exists(configPath))
+            if (!File.Exists(filePath))
             {
-                Logger.Error($"道具配置文件不存在：{configPath}");
-                return;
+                throw new Exception($"ItemConfig file not found: {filePath}");
             }
 
-            string json = File.ReadAllText(configPath);
+            string json = File.ReadAllText(filePath);
+            List<ItemConfig>? configList = JsonSerializer.Deserialize<List<ItemConfig>>(json);
 
-            List<ItemConfig> configs = JsonSerializer.Deserialize<List<ItemConfig>>(
-                json,
-                new JsonSerializerOptions
+            _itemConfigList.Clear();
+            _itemConfigDict.Clear();
+
+            if (configList != null)
+            {
+                _itemConfigList.AddRange(configList);
+
+                foreach (ItemConfig config in _itemConfigList)
                 {
-                    PropertyNameCaseInsensitive = true
-                }) ?? throw new Exception("道具配置表反序列化失败");
-
-            foreach (ItemConfig config in configs)
-            {
-                _configDict[config.ItemId] = config;
+                    _itemConfigDict[config.ItemId] = config;
+                }
             }
 
-            Logger.Info($"服务端道具配置加载完成，数量：{_configDict.Count}");
+            Logger.Info($"服务端道具配置加载完成, 数量 = {_itemConfigDict.Count}");
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace MMOServer.Config
         /// </summary>
         public ItemConfig GetById(int itemId)
         {
-            _configDict.TryGetValue(itemId, out ItemConfig config);
+            _itemConfigDict.TryGetValue(itemId, out ItemConfig config);
             return config;
         }
 
@@ -55,7 +55,27 @@ namespace MMOServer.Config
         /// </summary>
         public List<ItemConfig> GetAll()
         {
-            return _configDict.Values.ToList();
+            return _itemConfigList;
+        }
+
+        /// <summary>
+        /// 获取全部可装备道具配置
+        /// </summary>
+        public List<ItemConfig> GetAllEquipItems()
+        {
+            return _itemConfigList
+                .Where(x => x.CanEquip == 1)
+                .ToList();
+        }
+
+        /// <summary>
+        /// 根据装备槽位类型获取可装备道具配置
+        /// </summary>
+        public List<ItemConfig> GetEquipItemsBySlotType(int equipSlotType)
+        {
+            return _itemConfigList
+                .Where(x => x.CanEquip == 1 && x.EquipSlotType == equipSlotType)
+                .ToList();
         }
     }
 }

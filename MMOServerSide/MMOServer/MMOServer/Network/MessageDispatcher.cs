@@ -14,41 +14,36 @@ namespace MMOServer.Network
             {
                 case MessageId.LoginRequest:
                     return GameServer.Instance.UserService.HandleLogin(requestMessage);
-
                 case MessageId.RegisterRequest:
                     return GameServer.Instance.UserService.HandleRegister(requestMessage);
-
                 case MessageId.GetCharacterListRequest:
                     return GameServer.Instance.CharacterService.HandleGetCharacterList(requestMessage);
-
                 case MessageId.CreateCharacterRequest:
                     return GameServer.Instance.CharacterService.HandleCreateCharacter(requestMessage);
-
                 case MessageId.EnterGameRequest:
                     return GameServer.Instance.WorldService.HandleEnterGame(requestMessage, session);
-
                 case MessageId.PlayerMoveRequest:
                     GameServer.Instance.WorldService.HandlePlayerMove(requestMessage, session);
                     return null;
-
                 case MessageId.PlayerExitRequest:
                     GameServer.Instance.WorldService.HandlePlayerExit(requestMessage, session);
                     return null;
-
-                case MessageId.TeleportRequest: // 新增
+                case MessageId.TeleportRequest:
                     return GameServer.Instance.WorldService.HandleTeleport(requestMessage, session);
-
                 case MessageId.GetInventoryRequest:
                     return GameServer.Instance.InventoryService.HandleGetInventory(requestMessage, session);
-
                 case MessageId.UseItemRequest:
                     return GameServer.Instance.InventoryService.HandleUseItem(requestMessage, session);
-
                 case MessageId.SellItemRequest:
                     return GameServer.Instance.InventoryService.HandleSellItem(requestMessage, session);
-
                 case MessageId.BuyShopItemRequest:
                     return GameServer.Instance.ShopService.HandleBuyShopItem(requestMessage, session);
+                case MessageId.GetEquipmentRequest:
+                    return GameServer.Instance.EquipmentService.HandleGetEquipment(requestMessage, session);
+                case MessageId.EquipItemRequest:
+                    return GameServer.Instance.EquipmentService.HandleEquipItem(requestMessage, session);
+                case MessageId.UnequipItemRequest:
+                    return GameServer.Instance.EquipmentService.HandleUnequipItem(requestMessage, session);
                 default:
                     Logger.Warn($"Unknown message id: {requestMessage.MessageId}");
                     return null;

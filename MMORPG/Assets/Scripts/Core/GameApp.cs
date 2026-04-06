@@ -16,10 +16,12 @@ public class GameApp : MonoBehaviour
     public WorldService WorldService { get; private set; }//世界消息业务层
     public InventoryService InventoryService { get; private set; }//背包业务层
     public ShopService ShopService { get; private set; }//商店业务层
+    public EquipmentService EquipmentService { get; private set; }//装备业务层
     //当前玩家数据交互服务
     public PlayerCharacterManager PlayerCharacterManager { get; private set; }//玩家当前角色信息管理器
     public PlayerInventoryManager PlayerInventoryManager { get; private set; }//玩家当前角色背包管理器
     public InteractionManager InteractionManager { get; private set; }//玩家交互管理器
+    public PlayerEquipmentManager PlayerEquipmentManager { get; private set; }//玩家当前角色装备管理器
     //联机服务
     public PlayerSpawnManager PlayerSpawnManager { get; private set; }//玩家生成管理器
     public RemotePlayerManager RemotePlayerManager { get; private set; }//场景里其他玩家对象的总表
@@ -68,10 +70,12 @@ public class GameApp : MonoBehaviour
         WorldService            = new WorldService();
         InventoryService        = new InventoryService();
         ShopService             = new ShopService();
+        EquipmentService        = new EquipmentService();
         //当前玩家数据交互服务
         PlayerCharacterManager  = new PlayerCharacterManager();
         PlayerInventoryManager  = new PlayerInventoryManager();
         InteractionManager      = new InteractionManager();
+        PlayerEquipmentManager  = new PlayerEquipmentManager();
         //联机服务
         PlayerSpawnManager      = new PlayerSpawnManager();
         RemotePlayerManager     = new RemotePlayerManager();

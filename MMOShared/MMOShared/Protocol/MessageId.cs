@@ -45,5 +45,12 @@ namespace Protocol
         // 传送
         TeleportRequest = 1023,
         TeleportResponse = 1024,
+        // 装备相关
+        GetEquipmentRequest = 1025,
+        GetEquipmentResponse = 1026,
+        EquipItemRequest = 1027,
+        EquipItemResponse = 1028,
+        UnequipItemRequest = 1029,
+        UnequipItemResponse = 1030,
     }
 }
